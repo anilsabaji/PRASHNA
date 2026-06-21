@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KP Prashna Astrology</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --card-bg: #ffffff;
+    --ink: #2b2b33;
+    --muted: #6b6b76;
+    --accent: #7c3a2d;
+    --accent-soft: #b3543f;
+    --gold: #c79a45;
+    --border: #e3ddd0;
+    --shadow: 0 6px 22px rgba(60, 45, 30, 0.10);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 18px 48px;
+  }
+
+  /* ---------- Header ---------- */
+  header.app-header {
+    text-align: center;
+    padding: 26px 16px 18px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-soft) 100%);
+    color: #fff7ee;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+  }
+
+  header.app-header h1 {
+    margin: 0;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
+
+  header.app-header .subtitle {
+    margin-top: 6px;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: #ffe9d6;
+    opacity: 0.95;
+  }
+
+  /* ---------- Tab bar ---------- */
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .tab-bar button {
+    flex: 1 1 180px;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 13px 18px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--muted);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.05s ease;
+  }
+
+  .tab-bar button:hover { color: var(--accent); }
+  .tab-bar button:active { transform: translateY(1px); }
+
+  .tab-bar button.active {
+    background: var(--accent);
+    color: #fff7ee;
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- Cards / results ---------- */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+    margin-bottom: 20px;
+  }
+
+  #results:empty {
+    display: none;
+  }
+
+  .results-placeholder {
+    text-align: center;
+    color: var(--muted);
+    font-style: italic;
+    padding: 30px 10px;
+  }
+
+  h2.section-title {
+    font-size: 1.25rem;
+    color: var(--accent);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 6px;
+    margin-top: 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    color: var(--accent);
+    font-variant: small-caps;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- Forms ---------- */
+  .form-card { /* uses .card base */ }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px 18px;
+    margin-bottom: 6px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field.full { grid-column: 1 / -1; }
+
+  .field label {
+    font-size: 0.82rem;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .field input,
+  .field select {
+    font-family: inherit;
+    font-size: 0.98rem;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #fffdf9;
+    color: var(--ink);
+    width: 100%;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    outline: none;
+    border-color: var(--accent-soft);
+    box-shadow: 0 0 0 3px rgba(179, 84, 63, 0.14);
+  }
+
+  .field .hint {
+    font-size: 0.76rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .loc-block {
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 4px;
+    grid-column: 1 / -1;
+  }
+
+  .loc-block legend {
+    font-size: 0.82rem;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    font-weight: 700;
+    padding: 0 6px;
+  }
+
+  .btn-primary {
+    font-family: inherit;
+    font-size: 1.02rem;
+    font-weight: 700;
+    padding: 12px 22px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-soft) 100%);
+    color: #fff7ee;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.05s ease, filter 0.18s ease;
+  }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-primary:active { transform: translateY(1px); }
+
+  .form-msg {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .form-msg.show { display: block; }
+  .form-msg.error {
+    background: #fbe9e7;
+    color: #8a2c1d;
+    border: 1px solid #e6b8ae;
+  }
+  .form-msg.info {
+    background: #eef4fb;
+    color: #2f4d6b;
+    border: 1px solid #c4d6ea;
+  }
+
+  .hidden { display: none !important; }
+
+  /* analysis paragraphs */
+  .analysis p { margin: 0 0 12px; }
+  .analysis p:last-child { margin-bottom: 0; }
+  .verdict-line { font-weight: 700; color: var(--accent); }
+
+  .results-attribution {
+    text-align: center;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 6px;
+  }
+  .results-attribution .dev { font-weight: 700; color: var(--accent); }
+
+  /* ---------- Footer ---------- */
+  footer.app-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 18px 12px;
+    color: var(--muted);
+    font-size: 0.92rem;
+    border-top: 1px solid var(--border);
+  }
+
+  footer.app-footer .dev {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  footer.app-footer a {
+    color: var(--accent-soft);
+    text-decoration: none;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 560px) {
+    .page { padding: 14px 10px 36px; }
+    .card { padding: 16px; }
+    th, td { padding: 6px 6px; font-size: 0.88rem; }
+  }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body { background: #fff; color: #000; }
+    .tab-bar, .results-placeholder { display: none !important; }
+    header.app-header {
+      background: none;
+      color: #000;
+      box-shadow: none;
+      border-bottom: 2px solid #000;
+      border-radius: 0;
+    }
+    .card { box-shadow: none; border: 1px solid #999; break-inside: avoid; }
+    footer.app-footer { border-top: 1px solid #000; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="app-header">
+      <h1>KP Prashna Astrology</h1>
+      <div class="subtitle">Horary analysis &mdash; Hora Shastra &amp; Krishnamurti Paddhati</div>
+    </header>
+
+    <nav class="tab-bar" role="tablist" aria-label="Prashna mode">
+      <button type="button" role="tab" id="tab-manual" class="active" aria-selected="true">Manual Prashna</button>
+      <button type="button" role="tab" id="tab-instant" aria-selected="false">Instant Prashna</button>
+    </nav>
+
+    <section id="form-area"></section>
+
+    <main>
+      <div id="results" aria-live="polite"></div>
+    </main>
+
+    <footer class="app-footer">
+      <span class="dev">Developed by Dr. Anil Sabaji</span>,
+      Email: <a href="mailto:anilsabaji@gmail.com">anilsabaji@gmail.com</a>
+    </footer>
+  </div>
+
+<script>
+"use strict";
+(function (global) {
+
+  /* =====================================================================
+   * Global namespace + attribution
+   * ===================================================================== */
+  const ATTRIBUTION = "Developed by Dr. Anil Sabaji, Email: anilsabaji@gmail.com";
+
+  const KPApp = {
+    ATTRIBUTION: ATTRIBUTION,
+    util: {},     // shared helpers
+    astro: {},    // astronomy layer
+    kp: {},       // KP astrology layer (placeholder)
+    interpret: {},// interpretation layer (placeholder)
+    ui: {}        // UI layer (placeholder)
+  };
+
+  /* =====================================================================
+   * Shared utilities
+   * ===================================================================== */
+
+  // Normalize any angle in degrees into the range [0, 360).
+  KPApp.util.normalize360 = function normalize360(x) {
+    return ((x % 360) + 360) % 360;
+  };
+
+  const normalize360 = KPApp.util.normalize360;
+
+  const D2R = Math.PI / 180;
+  const R2D = 180 / Math.PI;
+
+  function sinD(d) { return Math.sin(d * D2R); }
+  function cosD(d) { return Math.cos(d * D2R); }
+  function tanD(d) { return Math.tan(d * D2R); }
+  function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+
+  /* =====================================================================
+   * ASTRONOMY LAYER  (KPApp.astro)
+   * ===================================================================== */
+  const astro = KPApp.astro;
+
+  // --- Time / Julian Day -------------------------------------------------
+
+  // Standard Julian Day from a Gregorian calendar date and UTC hour.
+  astro.toJulianDay = function toJulianDay(year, month, day, hourUTC) {
+    hourUTC = hourUTC || 0;
+    let y = year;
+    let m = month;
+    if (m <= 2) { y -= 1; m += 12; }
+    const A = Math.floor(y / 100);
+    const B = 2 - A + Math.floor(A / 4);
+    const jd = Math.floor(365.25 * (y + 4716)) +
+               Math.floor(30.6001 * (m + 1)) +
+               day + B - 1524.5 + (hourUTC / 24);
+    return jd;
+  };
+
+  // Julian centuries since J2000.0 (TT approximated by UT here).
+  astro.julianCenturies = function julianCenturies(jd) {
+    return (jd - 2451545.0) / 36525.0;
+  };
+
+  // Convert a local date/time + timezone offset (hours, east positive) to JD (UT).
+  // dateStr: "YYYY-MM-DD", timeStr: "HH:MM" or "HH:MM:SS".
+  astro.localToJD = function localToJD(dateStr, timeStr, tzOffsetHours) {
+    const dm = /^(\d{1,4})-(\d{1,2})-(\d{1,2})$/.exec(String(dateStr).trim());
+    if (!dm) throw new Error("Invalid date string: " + dateStr);
+    const year = parseInt(dm[1], 10);
+    const month = parseInt(dm[2], 10);
+    const day = parseInt(dm[3], 10);
+
+    const tm = /^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/.exec(String(timeStr).trim());
+    if (!tm) throw new Error("Invalid time string: " + timeStr);
+    const hh = parseInt(tm[1], 10);
+    const mm = parseInt(tm[2], 10);
+    const ss = tm[3] ? parseInt(tm[3], 10) : 0;
+
+    const localHour = hh + mm / 60 + ss / 3600;
+    const hourUTC = localHour - (tzOffsetHours || 0);
+    // toJulianDay handles fractional / out-of-range hours (carry into the date) correctly.
+    return astro.toJulianDay(year, month, day, hourUTC);
+  };
+
+  // Weekday index for the local civil day of a JD. 0 = Sunday ... 6 = Saturday.
+  astro.weekdayIndex = function weekdayIndex(jd) {
+    return ((Math.floor(jd + 1.5) % 7) + 7) % 7;
+  };
+
+  // --- Tropical ephemeris -----------------------------------------------
+
+  // Schlyter orbital elements (angles in degrees), d = days since 1999-12-31 00:00 UT.
+  function schlyterDay(jd) { return jd - 2451543.5; }
+
+  const PLANET_ELEMENTS = {
+    Mercury: function (d) {
+      return { N: 48.3313 + 3.24587e-5 * d, i: 7.0047 + 5.00e-8 * d,
+               w: 29.1241 + 1.01444e-5 * d, a: 0.387098,
+               e: 0.205635 + 5.59e-10 * d, M: 168.6562 + 4.0923344368 * d };
+    },
+    Venus: function (d) {
+      return { N: 76.6799 + 2.46590e-5 * d, i: 3.3946 + 2.75e-8 * d,
+               w: 54.8910 + 1.38374e-5 * d, a: 0.723330,
+               e: 0.006773 - 1.302e-9 * d, M: 48.0052 + 1.6021302244 * d };
+    },
+    Mars: function (d) {
+      return { N: 49.5574 + 2.11081e-5 * d, i: 1.8497 - 1.78e-8 * d,
+               w: 286.5016 + 2.92961e-5 * d, a: 1.523688,
+               e: 0.093405 + 2.516e-9 * d, M: 18.6021 + 0.5240207766 * d };
+    },
+    Jupiter: function (d) {
+      return { N: 100.4542 + 2.76854e-5 * d, i: 1.3030 - 1.557e-7 * d,
+               w: 273.8777 + 1.64505e-5 * d, a: 5.20256,
+               e: 0.048498 + 4.469e-9 * d, M: 19.8950 + 0.0830853001 * d };
+    },
+    Saturn: function (d) {
+      return { N: 113.6634 + 2.38980e-5 * d, i: 2.4886 - 1.081e-7 * d,
+               w: 339.3939 + 2.97661e-5 * d, a: 9.55475,
+               e: 0.055546 - 9.499e-9 * d, M: 316.9670 + 0.0334442282 * d };
+    }
+  };
+
+  // Sun's geocentric longitude + rectangular ecliptic coords (equinox of date).
+  function sunPosition(jd) {
+    const d = schlyterDay(jd);
+    const w = 282.9404 + 4.70935e-5 * d;
+    const e = 0.016709 - 1.151e-9 * d;
+    const M = normalize360(356.0470 + 0.9856002585 * d);
+
+    // Eccentric anomaly (low eccentricity, closed-form first approximation refined once).
+    let E = M + e * R2D * sinD(M) * (1 + e * cosD(M));
+    // One Newton refinement for safety.
+    E = E - (E - e * R2D * sinD(E) - M) / (1 - e * cosD(E));
+
+    const xv = cosD(E) - e;
+    const yv = Math.sqrt(1 - e * e) * sinD(E);
+    const v = Math.atan2(yv, xv) * R2D;      // true anomaly
+    const r = Math.sqrt(xv * xv + yv * yv);  // distance in AU
+    const lonsun = normalize360(v + w);
+    return {
+      lon: lonsun,
+      xs: r * cosD(lonsun),
+      ys: r * sinD(lonsun)
+    };
+  }
+
+  // Solve Kepler's equation iteratively (degrees). Robust for all eccentricities used here.
+  function eccentricAnomaly(M, e) {
+    M = normalize360(M);
+    let E = M + e * R2D * sinD(M) * (1 + e * cosD(M));
+    for (let k = 0; k < 12; k++) {
+      const dE = (E - e * R2D * sinD(E) - M) / (1 - e * cosD(E));
+      E -= dE;
+      if (Math.abs(dE) < 1e-9) break;
+    }
+    return E;
+  }
+
+  // Geocentric tropical (equinox-of-date) ecliptic longitude of a major planet.
+  function planetLongitude(name, jd) {
+    const el = PLANET_ELEMENTS[name](schlyterDay(jd));
+    const E = eccentricAnomaly(el.M, el.e);
+
+    // Position in orbital plane.
+    const xv = el.a * (cosD(E) - el.e);
+    const yv = el.a * Math.sqrt(1 - el.e * el.e) * sinD(E);
+    const v = Math.atan2(yv, xv) * R2D;
+    const r = Math.sqrt(xv * xv + yv * yv);
+
+    const vw = v + el.w;
+    // Heliocentric ecliptic rectangular coordinates.
+    const xh = r * (cosD(el.N) * cosD(vw) - sinD(el.N) * sinD(vw) * cosD(el.i));
+    const yh = r * (sinD(el.N) * cosD(vw) + cosD(el.N) * sinD(vw) * cosD(el.i));
+
+    // Geocentric = heliocentric + (negated Earth) = heliocentric + Sun's geocentric coords.
+    const sun = sunPosition(jd);
+    const xg = xh + sun.xs;
+    const yg = yh + sun.ys;
+    return normalize360(Math.atan2(yg, xg) * R2D);
+  }
+
+  // Geocentric tropical longitude of the Moon (Meeus abbreviated series, ~arc-minute level).
+  function moonLongitude(jd) {
+    const T = astro.julianCenturies(jd);
+    const Lp = 218.3164477 + 481267.88123421 * T;   // mean longitude
+    const D  = 297.8501921 + 445267.1114034 * T;     // mean elongation
+    const M  = 357.5291092 + 35999.0502909 * T;      // Sun mean anomaly
+    const Mp = 134.9633964 + 477198.8675055 * T;     // Moon mean anomaly
+    const F  = 93.272095   + 483202.0175233 * T;     // argument of latitude
+
+    let lon = Lp
+      + 6.288774 * sinD(Mp)
+      - 1.274027 * sinD(Mp - 2 * D)
+      + 0.658314 * sinD(2 * D)
+      + 0.213618 * sinD(2 * Mp)
+      - 0.185116 * sinD(M)
+      - 0.114332 * sinD(2 * F)
+      + 0.058793 * sinD(2 * D - 2 * Mp)
+      + 0.057066 * sinD(2 * D - M - Mp)
+      + 0.053322 * sinD(2 * D + Mp)
+      + 0.045758 * sinD(2 * D - M)
+      - 0.040923 * sinD(M - Mp)
+      - 0.034720 * sinD(D)
+      - 0.030383 * sinD(M + Mp)
+      + 0.015327 * sinD(2 * D - 2 * F)
+      - 0.012528 * sinD(2 * F + Mp)
+      + 0.010980 * sinD(2 * F - Mp)
+      + 0.010675 * sinD(4 * D - Mp)
+      + 0.010034 * sinD(3 * Mp);
+    return normalize360(lon);
+  }
+
+  // tropicalLongitude(planet, jd): geocentric tropical ecliptic longitude, degrees [0,360).
+  astro.tropicalLongitude = function tropicalLongitude(planet, jd) {
+    switch (planet) {
+      case "Sun":   return sunPosition(jd).lon;
+      case "Moon":  return moonLongitude(jd);
+      case "Mercury":
+      case "Venus":
+      case "Mars":
+      case "Jupiter":
+      case "Saturn": return planetLongitude(planet, jd);
+      default: throw new Error("Unknown planet: " + planet);
+    }
+  };
+
+  // Moon's mean ascending node (Rahu) -- retrograde. Tropical longitude in [0,360).
+  astro.rahuLongitude = function rahuLongitude(jd) {
+    const T = astro.julianCenturies(jd);
+    const omega = 125.04452 - 1934.136261 * T + 0.0020708 * T * T + (T * T * T) / 450000;
+    return normalize360(omega);
+  };
+
+  // --- Ayanamsa / sidereal ----------------------------------------------
+
+  // Krishnamurti (KP) ayanamsa: ~23.71deg near J2000 with linear precession (~50.2388"/yr).
+  astro.kpAyanamsa = function kpAyanamsa(jd) {
+    const T = astro.julianCenturies(jd);
+    return 23.7146 + 1.395520 * T; // 1.39552 deg per Julian century
+  };
+
+  // Tropical -> sidereal using KP ayanamsa.
+  astro.toSidereal = function toSidereal(tropicalLon, jd) {
+    return normalize360(tropicalLon - astro.kpAyanamsa(jd));
+  };
+
+  // Sidereal longitudes of the nine bodies, all normalized to [0,360).
+  astro.siderealPositions = function siderealPositions(jd) {
+    const rahuTrop = astro.rahuLongitude(jd);
+    const pos = {
+      Sun:     astro.toSidereal(astro.tropicalLongitude("Sun", jd), jd),
+      Moon:    astro.toSidereal(astro.tropicalLongitude("Moon", jd), jd),
+      Mercury: astro.toSidereal(astro.tropicalLongitude("Mercury", jd), jd),
+      Venus:   astro.toSidereal(astro.tropicalLongitude("Venus", jd), jd),
+      Mars:    astro.toSidereal(astro.tropicalLongitude("Mars", jd), jd),
+      Jupiter: astro.toSidereal(astro.tropicalLongitude("Jupiter", jd), jd),
+      Saturn:  astro.toSidereal(astro.tropicalLongitude("Saturn", jd), jd),
+      Rahu:    astro.toSidereal(rahuTrop, jd)
+    };
+    pos.Ketu = normalize360(pos.Rahu + 180);
+    return pos;
+  };
+
+  // --- Houses (Placidus) -------------------------------------------------
+
+  // Mean obliquity of the ecliptic (degrees).
+  function obliquity(jd) {
+    const T = astro.julianCenturies(jd);
+    return 23.439291 - 0.0130042 * T - 1.64e-7 * T * T + 5.04e-7 * T * T * T;
+  }
+
+  // Greenwich mean sidereal time (degrees).
+  function gmst(jd) {
+    const T = astro.julianCenturies(jd);
+    const theta = 280.46061837 +
+      360.98564736629 * (jd - 2451545.0) +
+      0.000387933 * T * T -
+      (T * T * T) / 38710000.0;
+    return normalize360(theta);
+  }
+
+  // Ecliptic longitude (tropical) of an ecliptic point given its right ascension (deg).
+  function lonFromRA(ra, eps) {
+    return normalize360(Math.atan2(sinD(ra), cosD(ra) * cosD(eps)) * R2D);
+  }
+
+  // Iterative Placidus intermediate cusp.
+  //   frac: fraction of the semi-arc (1/3 or 2/3)
+  //   night: false for diurnal cusps (11,12), true for nocturnal cusps (2,3)
+  function placidusIntermediate(ramc, eps, lat, frac, night) {
+    const base = night ? normalize360(ramc + 180) : ramc;
+    let ra = night ? base - frac * 90 : base + frac * 90;
+    for (let k = 0; k < 40; k++) {
+      const decl = Math.atan(sinD(ra) * tanD(eps)) * R2D;
+      const adArg = clamp(tanD(decl) * tanD(lat), -1, 1);
+      const ad = Math.asin(adArg) * R2D;
+      const semiArc = night ? (90 - ad) : (90 + ad);
+      const next = night ? base - frac * semiArc : base + frac * semiArc;
+      if (Math.abs(next - ra) < 1e-9) { ra = next; break; }
+      ra = next;
+    }
+    return lonFromRA(ra, eps);
+  }
+
+  // placidusCusps(jd, latDeg, lonDeg):
+  //   returns { ascendant, mc, cusps:[12 sidereal longitudes] } all normalized.
+  //   cusps[0] = house 1 (ascendant) ... cusps[11] = house 12.
+  astro.placidusCusps = function placidusCusps(jd, latDeg, lonDeg) {
+    const eps = obliquity(jd);
+    const lst = normalize360(gmst(jd) + lonDeg); // local sidereal time (deg), east positive
+    const ramc = lst;                            // right ascension of the MC
+
+    // Medium Coeli (tropical ecliptic longitude).
+    const mcTrop = normalize360(Math.atan2(sinD(ramc), cosD(ramc) * cosD(eps)) * R2D);
+
+    // Ascendant (tropical), forced into the rising semicircle ahead of the MC.
+    let ascTrop = normalize360(
+      Math.atan2(cosD(ramc), -(sinD(ramc) * cosD(eps) + tanD(latDeg) * sinD(eps))) * R2D
+    );
+    if (normalize360(ascTrop - mcTrop) > 180) {
+      ascTrop = normalize360(ascTrop + 180);
+    }
+
+    // Diurnal intermediate cusps (11, 12) and nocturnal (2, 3).
+    const c11 = placidusIntermediate(ramc, eps, latDeg, 1 / 3, false);
+    const c12 = placidusIntermediate(ramc, eps, latDeg, 2 / 3, false);
+    const c3  = placidusIntermediate(ramc, eps, latDeg, 1 / 3, true);
+    const c2  = placidusIntermediate(ramc, eps, latDeg, 2 / 3, true);
+
+    const tropCusps = new Array(12);
+    tropCusps[0]  = ascTrop;                       // house 1
+    tropCusps[1]  = c2;                            // house 2
+    tropCusps[2]  = c3;                            // house 3
+    tropCusps[3]  = normalize360(mcTrop + 180);    // house 4 (IC)
+    tropCusps[4]  = normalize360(c11 + 180);       // house 5
+    tropCusps[5]  = normalize360(c12 + 180);       // house 6
+    tropCusps[6]  = normalize360(ascTrop + 180);   // house 7 (Descendant)
+    tropCusps[7]  = normalize360(c2 + 180);        // house 8
+    tropCusps[8]  = normalize360(c3 + 180);        // house 9
+    tropCusps[9]  = mcTrop;                         // house 10 (MC)
+    tropCusps[10] = c11;                           // house 11
+    tropCusps[11] = c12;                           // house 12
+
+    const cusps = tropCusps.map(function (lon) { return astro.toSidereal(lon, jd); });
+
+    return {
+      ascendant: astro.toSidereal(ascTrop, jd),
+      mc: astro.toSidereal(mcTrop, jd),
+      cusps: cusps
+    };
+  };
+
+  /* =====================================================================
+   * KP ASTROLOGY LAYER  (KPApp.kp)
+   * ---------------------------------------------------------------------
+   * Pure, DOM-free computations: nakshatra / star-lord / sub-lord
+   * divisions, the deterministic horary-number table, house
+   * significators, ruling planets, and full Chart assembly.
+   * ===================================================================== */
+  const kp = KPApp.kp;
+
+  // --- Constants ---------------------------------------------------------
+
+  // 360 / 27 = 13.3333... degrees per nakshatra.
+  kp.NAKSHATRA_SPAN = 360 / 27;
+
+  // Vimshottari dasha sequence (the order in which lords own sub-spans).
+  kp.VIM_ORDER = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'];
+
+  // Vimshottari dasha years per lord (sum = 120).
+  kp.VIM_YEARS = {
+    Ketu: 7, Venus: 20, Sun: 6, Moon: 10, Mars: 7,
+    Rahu: 18, Jupiter: 16, Saturn: 19, Mercury: 17
+  };
+
+  // 27 nakshatra names, Ashwini .. Revati.
+  kp.NAKSHATRA_NAMES = [
+    'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
+    'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
+    'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
+    'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha',
+    'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
+  ];
+
+  // Sign (rashi) lords for the 12 rashis, Aries (0) .. Pisces (11).
+  kp.SIGN_LORDS = [
+    'Mars',     // Aries
+    'Venus',    // Taurus
+    'Mercury',  // Gemini
+    'Moon',     // Cancer
+    'Sun',      // Leo
+    'Mercury',  // Virgo
+    'Venus',    // Libra
+    'Mars',     // Scorpio
+    'Jupiter',  // Sagittarius
+    'Saturn',   // Capricorn
+    'Saturn',   // Aquarius
+    'Jupiter'   // Pisces
+  ];
+
+  // Weekday lords, index 0 = Sunday .. 6 = Saturday.
+  kp.WEEKDAY_LORDS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+
+  const NAKSHATRA_SPAN = kp.NAKSHATRA_SPAN;
+  const VIM_ORDER = kp.VIM_ORDER;
+  const VIM_YEARS = kp.VIM_YEARS;
+
+  // The nine bodies in canonical display order.
+  kp.BODIES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+
+  // --- Sign helpers ------------------------------------------------------
+
+  // Rashi index 0..11 for a longitude.
+  kp.signOf = function signOf(lon) {
+    return Math.floor(normalize360(lon) / 30) % 12;
+  };
+
+  // Sign (rashi) lord planet name for a longitude.
+  kp.signLordOf = function signLordOf(lon) {
+    return kp.SIGN_LORDS[kp.signOf(lon)];
+  };
+
+  const signOf = kp.signOf;
+  const signLordOf = kp.signLordOf;
+
+  // --- Nakshatra / star-lord --------------------------------------------
+
+  // Nakshatra index 0..26 for a longitude.
+  kp.nakshatraOf = function nakshatraOf(lon) {
+    return Math.floor(normalize360(lon) / NAKSHATRA_SPAN) % 27;
+  };
+
+  // Nakshatra name for a longitude.
+  kp.nakshatraName = function nakshatraName(lon) {
+    return kp.NAKSHATRA_NAMES[kp.nakshatraOf(lon)];
+  };
+
+  // Star-lord (nakshatra lord) for a longitude: VIM_ORDER[nak % 9].
+  kp.starLordOf = function starLordOf(lon) {
+    return VIM_ORDER[kp.nakshatraOf(lon) % 9];
+  };
+
+  const nakshatraOf = kp.nakshatraOf;
+  const starLordOf = kp.starLordOf;
+
+  // --- Sub-lord (Vimshottari proportional sub-divisions) -----------------
+
+  // Lay out the 9 Vimshottari sub-spans within a span of `totalSpan` degrees,
+  // beginning at absolute degree `start`, in Vimshottari order starting from
+  // `startLord`. Each lord's span = (VIM_YEARS[lord] / 120) * totalSpan.
+  // Returns [{ lord, start, end }] covering [start, start + totalSpan].
+  function vimshottariSpans(start, startLord, totalSpan) {
+    const idx = VIM_ORDER.indexOf(startLord);
+    const out = [];
+    let cursor = start;
+    for (let k = 0; k < 9; k++) {
+      const lord = VIM_ORDER[(idx + k) % 9];
+      const span = (VIM_YEARS[lord] / 120) * totalSpan;
+      out.push({ lord: lord, start: cursor, end: cursor + span });
+      cursor += span;
+    }
+    return out;
+  }
+  kp._vimshottariSpans = vimshottariSpans; // exposed for testing
+
+  // Find the sub-division (within its nakshatra) that owns a longitude.
+  // Returns { lord, start, end } in absolute degrees.
+  function subSpanOf(lon) {
+    const L = normalize360(lon);
+    const nak = nakshatraOf(L);
+    const nakStart = nak * NAKSHATRA_SPAN;
+    const star = VIM_ORDER[nak % 9];
+    const spans = vimshottariSpans(nakStart, star, NAKSHATRA_SPAN);
+    for (let i = 0; i < spans.length; i++) {
+      if (L < spans[i].end) return spans[i];
+    }
+    return spans[spans.length - 1]; // float-safe fallback for the very top edge
+  }
+
+  // Sub-lord planet name for a longitude.
+  kp.subLordOf = function subLordOf(lon) {
+    return subSpanOf(lon).lord;
+  };
+
+  // Sub-sub-lord: apply the same proportional method one level deeper,
+  // inside the owning sub-span and starting from the sub-lord.
+  kp.subSubLordOf = function subSubLordOf(lon) {
+    const L = normalize360(lon);
+    const sub = subSpanOf(L);
+    const inner = vimshottariSpans(sub.start, sub.lord, sub.end - sub.start);
+    for (let i = 0; i < inner.length; i++) {
+      if (L < inner[i].end) return inner[i].lord;
+    }
+    return inner[inner.length - 1].lord;
+  };
+
+  // Convenience dignity bundle for a longitude.
+  kp.dignitySummary = function dignitySummary(lon) {
+    return {
+      sign: signOf(lon),
+      signLord: signLordOf(lon),
+      nakshatra: nakshatraOf(lon),
+      nakshatraName: kp.nakshatraName(lon),
+      starLord: starLordOf(lon),
+      subLord: kp.subLordOf(lon)
+    };
+  };
+
+  // --- 1..N horary table -------------------------------------------------
+
+  // Build the canonical KP horary sub-division table covering 1..N (the
+  // classical "1-249" scheme). The 360 zodiac is walked from 0 deg Aries
+  // (Ashwini). For each of the 27 nakshatras the 9 Vimshottari sub-lord spans
+  // are emitted in order, starting from that nakshatra's star-lord. This base
+  // partition has 27 x 9 = 243 star-sub divisions. Each division is then
+  // additionally SPLIT at every zodiac SIGN (rashi) boundary (each multiple of
+  // 30 deg): when a star-sub division straddles a sign boundary it becomes two
+  // (or more) separate numbered rows, one per sign it occupies. Rows are
+  // emitted in ascending degree order and numbered 1..N. Each entry:
+  //   { number, startDeg, endDeg, signLord, starLord, subLord }
+  // The standard KP table resolves to 249 rows; this builder is deterministic,
+  // and kp.HORARY_COUNT always reflects the true resulting length.
+  kp.buildHoraryTable = function buildHoraryTable() {
+    const EPS = 1e-7;
+
+    // (1) Base 243 star-sub divisions in ascending order.
+    const base = [];
+    for (let nak = 0; nak < 27; nak++) {
+      const nakStart = nak * NAKSHATRA_SPAN;
+      const star = VIM_ORDER[nak % 9];
+      const spans = vimshottariSpans(nakStart, star, NAKSHATRA_SPAN);
+      for (let s = 0; s < spans.length; s++) {
+        base.push({ start: spans[s].start, end: spans[s].end, star: star, sub: spans[s].lord });
+      }
+    }
+
+    // (2) Split each division at interior sign (30 deg) boundaries.
+    const table = [];
+    let number = 1;
+    function emit(start, end, star, sub) {
+      const mid = (start + end) / 2; // midpoint avoids boundary ambiguity
+      table.push({
+        number: number++,
+        startDeg: start,
+        endDeg: end,
+        signLord: signLordOf(mid),
+        starLord: star,
+        subLord: sub
+      });
+    }
+    for (let i = 0; i < base.length; i++) {
+      const seg = base[i];
+      let segStart = seg.start;
+      const segEnd = seg.end;
+      // Next sign boundary strictly above segStart.
+      let boundary = (Math.floor(segStart / 30) + 1) * 30;
+      while (boundary < segEnd - EPS) {
+        if (boundary > segStart + EPS) {
+          emit(segStart, boundary, seg.star, seg.sub);
+          segStart = boundary;
+        }
+        boundary += 30;
+      }
+      emit(segStart, segEnd, seg.star, seg.sub);
+    }
+    return table;
+  };
+
+  // Cached table + count.
+  kp.HORARY_TABLE = kp.buildHoraryTable();
+  kp.HORARY_COUNT = kp.HORARY_TABLE.length;
+
+  // Map a horary number to an ascendant. Deterministic; returns null for any
+  // value that is not an integer within the valid range.
+  kp.horaryToAscendant = function horaryToAscendant(n) {
+    if (typeof n !== 'number' || !isFinite(n) || Math.floor(n) !== n) return null;
+    const table = kp.HORARY_TABLE;
+    if (n < 1 || n > table.length) return null;
+    const e = table[n - 1];
+    return {
+      number: e.number,
+      degree: normalize360((e.startDeg + e.endDeg) / 2),
+      startDeg: e.startDeg,
+      signLord: e.signLord,
+      starLord: e.starLord,
+      subLord: e.subLord
+    };
+  };
+
+  // --- House occupancy ---------------------------------------------------
+
+  // Given a longitude and the 12 cusp longitudes (house 1..12 order), return
+  // the house number 1..12 whose span [cusp_i, cusp_{i+1}) contains it.
+  function houseOfLongitude(lon, cuspLons) {
+    const L = normalize360(lon);
+    for (let i = 0; i < 12; i++) {
+      const a = normalize360(cuspLons[i]);
+      const b = normalize360(cuspLons[(i + 1) % 12]);
+      const span = normalize360(b - a);
+      const offset = normalize360(L - a);
+      if (offset < span) return i + 1;
+    }
+    return 12; // float-safe fallback
+  }
+  kp.houseOfLongitude = houseOfLongitude;
+
+  // --- Significators -----------------------------------------------------
+
+  // Standard KP 4-step significators for every house 1..12.
+  //   (1) planets in the star of the occupant(s) of the house
+  //   (2) the occupant(s)
+  //   (3) planets in the star of the owner (sign-lord of the cusp)
+  //   (4) the owner
+  // Planets conjoined (same house) with Rahu/Ketu are added as agents of the
+  // node when the node itself signifies the house.
+  // Returns { 1:[planetName,...], ..., 12:[...] } with names of the 9 bodies.
+  kp.significatorsForHouses = function significatorsForHouses(chart) {
+    const planets = chart.planets;
+    const cuspLons = chart.cusps.map(function (c) { return c.longitude; });
+
+    // House occupancy + quick lookups.
+    const occupants = {};        // house -> [planetName]
+    const houseOfPlanet = {};    // planetName -> house
+    const starLordOfPlanet = {}; // planetName -> star-lord name
+    for (let h = 1; h <= 12; h++) occupants[h] = [];
+    planets.forEach(function (p) {
+      const h = houseOfLongitude(p.longitude, cuspLons);
+      occupants[h].push(p.name);
+      houseOfPlanet[p.name] = h;
+      starLordOfPlanet[p.name] = p.starLord;
+    });
+
+    // Planets whose star-lord is the given planet name.
+    function planetsInStarOf(lordName) {
+      return planets
+        .filter(function (p) { return starLordOfPlanet[p.name] === lordName; })
+        .map(function (p) { return p.name; });
+    }
+
+    // Planets sharing a house with the given node (conjunction agents).
+    function conjoinedWith(nodeName) {
+      const h = houseOfPlanet[nodeName];
+      return occupants[h].filter(function (n) { return n !== nodeName; });
+    }
+
+    const result = {};
+    for (let h = 1; h <= 12; h++) {
+      const ordered = [];
+      const seen = {};
+      function add(name) {
+        if (name && !seen[name]) { seen[name] = true; ordered.push(name); }
+      }
+
+      const occ = occupants[h];
+      const owner = signLordOf(cuspLons[h - 1]); // sign-lord of the cusp
+
+      // (1) planets in the star of the occupants
+      occ.forEach(function (o) { planetsInStarOf(o).forEach(add); });
+      // (2) the occupants
+      occ.forEach(add);
+      // (3) planets in the star of the owner
+      planetsInStarOf(owner).forEach(add);
+      // (4) the owner
+      add(owner);
+
+      // Node agency: if Rahu/Ketu signify this house, add their conjoined planets.
+      ['Rahu', 'Ketu'].forEach(function (node) {
+        if (seen[node]) conjoinedWith(node).forEach(add);
+      });
+
+      result[h] = ordered;
+    }
+    return result;
+  };
+
+  // --- Ruling planets ----------------------------------------------------
+
+  // Ruling planets of the Prashna moment.
+  kp.rulingPlanets = function rulingPlanets(chart) {
+    const weekday = chart.meta.weekday;
+    const moon = chart.planets.filter(function (p) { return p.name === 'Moon'; })[0];
+    const asc = chart.ascendant;
+    return {
+      dayLord: kp.WEEKDAY_LORDS[((weekday % 7) + 7) % 7],
+      moonStarLord: starLordOf(moon.longitude),
+      moonSignLord: signLordOf(moon.longitude),
+      moonSubLord: kp.subLordOf(moon.longitude),
+      lagnaStarLord: starLordOf(asc.longitude),
+      lagnaSignLord: signLordOf(asc.longitude),
+      lagnaSubLord: kp.subLordOf(asc.longitude)
+    };
+  };
+
+  // --- Chart assembly ----------------------------------------------------
+
+  // Build a complete Chart object from a Prashna moment and place.
+  // opts: { jd, latitude, longitude, timezone, weekday, mode, horaryNumber }
+  kp.buildChart = function buildChart(opts) {
+    opts = opts || {};
+    const jd = opts.jd;
+    const latitude = opts.latitude;
+    const longitude = opts.longitude;
+    const timezone = (typeof opts.timezone === 'number') ? opts.timezone : 0;
+    const mode = opts.mode || 'manual';
+    const weekday = (typeof opts.weekday === 'number')
+      ? opts.weekday
+      : astro.weekdayIndex(jd);
+
+    // Astronomy outputs.
+    const positions = astro.siderealPositions(jd);
+    const cuspData = astro.placidusCusps(jd, latitude, longitude);
+
+    // Planets (sidereal), canonical order; Rahu/Ketu flagged retrograde.
+    const planets = kp.BODIES.map(function (name) {
+      const lon = positions[name];
+      return {
+        name: name,
+        longitude: lon,
+        sign: signOf(lon),
+        signLord: signLordOf(lon),
+        nakshatra: nakshatraOf(lon),
+        nakshatraName: kp.nakshatraName(lon),
+        starLord: starLordOf(lon),
+        subLord: kp.subLordOf(lon),
+        retrograde: (name === 'Rahu' || name === 'Ketu')
+      };
+    });
+
+    // Twelve cusps.
+    const cusps = cuspData.cusps.map(function (lon, i) {
+      return {
+        house: i + 1,
+        longitude: lon,
+        sign: signOf(lon),
+        signLord: signLordOf(lon),
+        starLord: starLordOf(lon),
+        subLord: kp.subLordOf(lon)
+      };
+    });
+
+    // Time-based ascendant (always present).
+    const ascLon = cuspData.ascendant;
+    const ascendant = {
+      longitude: ascLon,
+      sign: signOf(ascLon),
+      signLord: signLordOf(ascLon),
+      starLord: starLordOf(ascLon),
+      subLord: kp.subLordOf(ascLon)
+    };
+
+    const chart = {
+      meta: {
+        jd: jd,
+        latitude: latitude,
+        longitude: longitude,
+        timezone: timezone,
+        weekday: weekday,
+        mode: mode
+      },
+      ayanamsa: astro.kpAyanamsa(jd),
+      planets: planets,
+      cusps: cusps,
+      ascendant: ascendant,
+      significators: null,
+      rulingPlanets: null,
+      horaryNumber: null,
+      horaryAscendant: null
+    };
+
+    // Optional KP horary ascendant (does NOT replace the time-based ascendant).
+    if (typeof opts.horaryNumber === 'number') {
+      const ha = kp.horaryToAscendant(opts.horaryNumber);
+      if (ha) {
+        chart.horaryNumber = opts.horaryNumber;
+        chart.horaryAscendant = {
+          number: ha.number,
+          longitude: ha.degree,
+          degree: ha.degree,
+          sign: signOf(ha.degree),
+          signLord: ha.signLord,
+          starLord: ha.starLord,
+          subLord: ha.subLord
+        };
+      }
+    }
+
+    // Derived KP layers (depend on planets/cusps/ascendant already in place).
+    chart.significators = kp.significatorsForHouses(chart);
+    chart.rulingPlanets = kp.rulingPlanets(chart);
+
+    return chart;
+  };
+
+  // Convenience top-level alias.
+  KPApp.buildChart = kp.buildChart;
+
+  /* =====================================================================
+   * INTERPRETATION LAYER  (KPApp.interpret)
+   * ---------------------------------------------------------------------
+   * Rule-based, DOM-free dual-system reasoning. Every string returned
+   * cites real values from the passed Chart (planets, sub-lords,
+   * nakshatras, significators, ruling planets) so each chart yields
+   * different, specific text. Depends only on the astronomy / KP layers
+   * already built above; it never mutates them.
+   * ===================================================================== */
+  const interpret = KPApp.interpret;
+
+  // --- Static reference data --------------------------------------------
+
+  // Zodiac sign names, Aries(0) .. Pisces(11).
+  interpret.SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+    'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+  const SIGN_NAMES = interpret.SIGN_NAMES;
+
+  // Element of each sign (index 0..11).
+  const SIGN_ELEMENT = ['fire', 'earth', 'air', 'water', 'fire', 'earth',
+    'air', 'water', 'fire', 'earth', 'air', 'water'];
+
+  // Benefic / malefic nature of the nine bodies (classical; waxing Moon benefic).
+  interpret.NATURE = {
+    Sun: 'malefic', Moon: 'benefic', Mars: 'malefic', Mercury: 'neutral',
+    Jupiter: 'benefic', Venus: 'benefic', Saturn: 'malefic', Rahu: 'malefic', Ketu: 'malefic'
+  };
+  const NATURE = interpret.NATURE;
+  function isMalefic(p) { return NATURE[p] === 'malefic'; }
+
+  // Cardinal direction ruled by each planet (missing-item bearings).
+  interpret.DIRECTION = {
+    Sun: 'East', Moon: 'North-West', Mars: 'South', Mercury: 'North',
+    Jupiter: 'North-East', Venus: 'South-East', Saturn: 'West', Rahu: 'South-West',
+    Ketu: 'the corners / a diagonal bearing'
+  };
+  const DIRECTION = interpret.DIRECTION;
+
+  // Material / object class signified by each planet (missing-item).
+  interpret.MATERIAL = {
+    Sun: 'gold, copper, brass or wooden articles',
+    Moon: 'silver, pearls, water-related items, liquids or clothes',
+    Mars: 'metal, iron, copper, tools, weapons or electronic gadgets',
+    Mercury: 'books, documents, papers, keys or items of communication',
+    Jupiter: 'gold ornaments, sacred or religious objects, or books of value',
+    Venus: 'jewellery, vehicles, decorative or cosmetic articles',
+    Saturn: 'iron, leather, old or black-coloured objects',
+    Rahu: 'electronics, foreign-made goods or unusual articles',
+    Ketu: 'hidden, spiritual or occult objects'
+  };
+  const MATERIAL = interpret.MATERIAL;
+
+  // Significator (karaka) planet per category, for the classical reading.
+  const CATEGORY_KARAKA = {
+    health: 'Sun', marriage: 'Venus', career: 'Saturn', litigation: 'Mars',
+    travel: 'Moon', children: 'Jupiter', finance: 'Jupiter', property: 'Mars',
+    education: 'Mercury', enemies: 'Mars', longevity: 'Saturn'
+  };
+
+  // --- Category -> houses (covers all twelve houses) --------------------
+  interpret.CATEGORY_HOUSES = {
+    health:     [1, 6, 8, 12],
+    marriage:   [2, 7, 11],
+    career:     [2, 6, 10, 11],
+    litigation: [6, 7, 8],
+    travel:     [3, 9, 12],
+    children:   [2, 5, 11],
+    finance:    [2, 6, 11],
+    property:   [4, 11, 12],
+    education:  [4, 5, 9],
+    enemies:    [6, 8, 12],
+    longevity:  [1, 3, 8],
+    missingItem:[2, 4, 6, 7, 11]
+  };
+  const CATEGORY_HOUSES = interpret.CATEGORY_HOUSES;
+
+  // Verify the union of all mapped houses equals {1..12}.
+  interpret.housesCovered = function housesCovered() {
+    const set = {};
+    Object.keys(CATEGORY_HOUSES).forEach(function (c) {
+      CATEGORY_HOUSES[c].forEach(function (h) { set[h] = true; });
+    });
+    const covered = Object.keys(set).map(Number).sort(function (a, b) { return a - b; });
+    let complete = covered.length === 12;
+    for (let h = 1; h <= 12 && complete; h++) { if (!set[h]) complete = false; }
+    return { covered: covered, complete: complete };
+  };
+
+  // --- Human-friendly labels + rationale of which houses are judged -----
+  interpret.CATEGORY_LABELS = {
+    health: {
+      name: 'Health & Recovery', houses: [1, 6, 8, 12],
+      description: 'Judged from the 1st (body and vitality), 6th (disease), 8th (chronic or critical illness) and 12th (hospitalisation and loss of health); the 1st-5th-11th uphold the native while the 6-8-12 group afflict.'
+    },
+    marriage: {
+      name: 'Marriage', houses: [2, 7, 11],
+      description: 'Judged from the 2nd (addition to the family), 7th (spouse / partner) and 11th (fulfilment of desire); a 7th cuspal sub-lord signifying 2-7-11 promises marriage, signifying 1-6-10 denies it.'
+    },
+    career: {
+      name: 'Career & Profession', houses: [2, 6, 10, 11],
+      description: 'Judged from the 10th (profession and status), 6th (service / employment), 2nd (income) and 11th (gains and fulfilment); a 10th sub-lord tied to 2-6-10-11 gives advancement, to 5-8-9-12 gives obstruction.'
+    },
+    litigation: {
+      name: 'Litigation & Disputes', houses: [6, 7, 8],
+      description: 'Judged from the 6th (the querent\u2019s case / victory over opponents), 7th (the opponent) and 8th (defeat, obstacles); strength of the 6th over the 7th decides the matter.'
+    },
+    travel: {
+      name: 'Travel & Journeys', houses: [3, 9, 12],
+      description: 'Judged from the 3rd (short journeys), 9th (long journeys) and 12th (foreign lands and distant residence); a sub-lord connected to 3-9-12 confirms movement.'
+    },
+    children: {
+      name: 'Children & Progeny', houses: [2, 5, 11],
+      description: 'Judged from the 5th (progeny), 2nd (growth of family) and 11th (fulfilment of the desire for a child); the 5th cuspal sub-lord tied to 2-5-11 promises children.'
+    },
+    finance: {
+      name: 'Finance & Wealth', houses: [2, 6, 11],
+      description: 'Judged from the 2nd (accumulated wealth), 11th (gains and profit) and 6th (loans recovered, competitive earnings); the 2nd sub-lord tied to 2-6-11 gives prosperity.'
+    },
+    property: {
+      name: 'Property & Real Estate', houses: [4, 11, 12],
+      description: 'Judged from the 4th (lands, house, vehicles), 11th (fulfilment / acquisition) and 12th (investment, loss or distant property); the 4th sub-lord tied to 4-11 confirms acquisition.'
+    },
+    education: {
+      name: 'Education & Learning', houses: [4, 5, 9],
+      description: 'Judged from the 4th (basic schooling), 5th (intelligence and examinations) and 9th (higher and specialised learning); the 4th/5th sub-lords tied to 4-5-9-11 give success.'
+    },
+    enemies: {
+      name: 'Enemies & Opposition', houses: [6, 8, 12],
+      description: 'Judged from the 6th (enemies and one\u2019s power to overcome them), 8th (defeat / hidden harm) and 12th (losses and secret foes); a strong 6th with 11 gives victory.'
+    },
+    longevity: {
+      name: 'Longevity & Span of Life', houses: [1, 3, 8],
+      description: 'Judged from the 1st (the body), 8th (ayur / span of life) and 3rd (the 8th from the 8th); the marakas (2nd and 7th) are weighed against these for any threat.'
+    },
+    missingItem: {
+      name: 'Missing / Lost Article', houses: [2, 4, 6, 7, 11],
+      description: 'Judged from the 2nd (possession / recovery), 11th (return of the article), 4th (within the premises / its place), 7th (the finder or thief) and 6th (the loss or theft itself).'
+    }
+  };
+
+  // --- Verdict configuration (favourable vs negating houses) ------------
+  const CATEGORY_CONFIG = {
+    health:     { primary: 1,  favourable: [1, 5, 11],     negating: [6, 8, 12],    yes: 'good health and recovery', no: 'continued ill-health or a prolonged ailment' },
+    marriage:   { primary: 7,  favourable: [2, 7, 11],     negating: [1, 6, 10],    yes: 'marriage is promised', no: 'marriage is denied or much delayed' },
+    career:     { primary: 10, favourable: [2, 6, 10, 11], negating: [5, 8, 9, 12], yes: 'gain of employment or promotion', no: 'obstruction or loss of position' },
+    litigation: { primary: 6,  favourable: [6, 11],        negating: [7, 8, 12],    yes: 'success / victory in the dispute', no: 'an adverse ruling or a settlement against the querent' },
+    travel:     { primary: 9,  favourable: [3, 9, 12],     negating: [1, 4, 8],     yes: 'the journey takes place', no: 'the journey is cancelled or obstructed' },
+    children:   { primary: 5,  favourable: [2, 5, 11],     negating: [1, 4, 10],    yes: 'progeny is promised', no: 'a denial or long delay of children' },
+    finance:    { primary: 2,  favourable: [2, 6, 11],     negating: [5, 8, 12],    yes: 'financial gain', no: 'loss or heavy expenditure' },
+    property:   { primary: 4,  favourable: [4, 11],        negating: [3, 5, 12],    yes: 'acquisition of the property / house', no: 'denial or loss of the property' },
+    education:  { primary: 4,  favourable: [4, 9, 11],     negating: [3, 8, 12],    yes: 'educational success', no: 'interruption or failure in studies' },
+    enemies:    { primary: 6,  favourable: [6, 11],        negating: [8, 12],       yes: 'victory over enemies', no: 'continued trouble from opponents' },
+    longevity:  { primary: 8,  favourable: [1, 3, 8],      negating: [2, 7],        yes: 'a good span of life with no immediate danger', no: 'a maraka affliction threatening longevity' },
+    missingItem:{ primary: 2,  favourable: [2, 11],        negating: [6, 8, 12],    yes: 'the article is recovered', no: 'the article is not recovered' }
+  };
+
+  // --- Small text / chart helpers ---------------------------------------
+
+  function listText(arr) {
+    const a = (arr || []).map(String);
+    if (a.length === 0) return 'none';
+    if (a.length === 1) return a[0];
+    return a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  }
+  function ordinal(n) {
+    const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+  function dedup(arr) {
+    const out = [], seen = {};
+    (arr || []).forEach(function (x) { if (x && !seen[x]) { seen[x] = true; out.push(x); } });
+    return out;
+  }
+  function planetByName(chart, name) {
+    return chart.planets.filter(function (p) { return p.name === name; })[0] || null;
+  }
+  function cuspLonsOf(chart) {
+    return chart.cusps.map(function (c) { return c.longitude; });
+  }
+  function houseOfPlanet(chart, name) {
+    const p = planetByName(chart, name);
+    if (!p) return null;
+    return houseOfLongitude(p.longitude, cuspLonsOf(chart));
+  }
+  // Degree formatted as DD MM' Sign.
+  function fmtDeg(lon) {
+    const L = normalize360(lon);
+    const s = Math.floor(L / 30);
+    const within = L - s * 30;
+    const d = Math.floor(within);
+    const m = Math.round((within - d) * 60);
+    const dd = (m === 60) ? d + 1 : d;
+    const mm = (m === 60) ? 0 : m;
+    return dd + '\u00b0' + (mm < 10 ? '0' : '') + mm + "' " + SIGN_NAMES[s];
+  }
+  function houseClass(h) {
+    if ([1, 4, 7, 10].indexOf(h) >= 0) return 'angular';
+    if ([2, 5, 8, 11].indexOf(h) >= 0) return 'succedent';
+    return 'cadent';
+  }
+
+  // Invert chart.significators -> { planetName: [houses signified] }.
+  interpret.planetHouseSignifications = function planetHouseSignifications(chart) {
+    const map = {};
+    kp.BODIES.forEach(function (n) { map[n] = []; });
+    for (let h = 1; h <= 12; h++) {
+      (chart.significators[h] || []).forEach(function (n) {
+        if (map[n] && map[n].indexOf(h) < 0) map[n].push(h);
+      });
+    }
+    Object.keys(map).forEach(function (k) {
+      map[k].sort(function (a, b) { return a - b; });
+    });
+    return map;
+  };
+
+  // --- Core judgment helper ---------------------------------------------
+  // Given a chart + relevant houses + config, gather the cusp sub-lord of
+  // the primary house, the significators of each relevant house, whether
+  // those agents connect to favourable vs negating houses, and the ruling
+  // planets, then form a YES / NO / favourable verdict.
+  interpret.gatherJudgment = function gatherJudgment(chart, houses, config) {
+    const psig = interpret.planetHouseSignifications(chart);
+    const primary = config.primary;
+    const pcusp = chart.cusps[primary - 1];
+    const subLord = pcusp.subLord;
+    const subSig = psig[subLord] || [];
+
+    const favHit = subSig.filter(function (h) { return config.favourable.indexOf(h) >= 0; });
+    const negHit = subSig.filter(function (h) { return config.negating.indexOf(h) >= 0; });
+
+    const sigByHouse = {};
+    houses.forEach(function (h) { sigByHouse[h] = chart.significators[h] || []; });
+
+    const rp = chart.rulingPlanets;
+    const rulingList = dedup([
+      rp.dayLord, rp.moonSignLord, rp.moonStarLord, rp.moonSubLord,
+      rp.lagnaSignLord, rp.lagnaStarLord, rp.lagnaSubLord
+    ]);
+    const rulingAgree = rulingList.filter(function (n) {
+      const s = psig[n] || [];
+      return s.some(function (h) { return config.favourable.indexOf(h) >= 0; });
+    });
+    const rulingDeny = rulingList.filter(function (n) {
+      const s = psig[n] || [];
+      return s.some(function (h) { return config.negating.indexOf(h) >= 0; });
+    });
+
+    let favourable;
+    if (favHit.length > 0 && negHit.length === 0) favourable = true;
+    else if (negHit.length > 0 && favHit.length === 0) favourable = false;
+    else favourable = (favHit.length + rulingAgree.length) >= (negHit.length + rulingDeny.length);
+
+    let verdict;
+    if (favourable && favHit.length > 0 && negHit.length === 0) verdict = 'YES';
+    else if (!favourable && favHit.length === 0 && negHit.length > 0) verdict = 'NO';
+    else verdict = favourable
+      ? 'FAVOURABLE (mixed signification, expect some delay)'
+      : 'UNFAVOURABLE (mixed signification, leaning negative)';
+
+    const fructifies = rulingAgree.length >= Math.max(1, Math.ceil(rulingList.length / 2));
+
+    return {
+      psig: psig, primary: primary, primaryCusp: pcusp, subLord: subLord, subSig: subSig,
+      favHit: favHit, negHit: negHit, sigByHouse: sigByHouse,
+      rulingList: rulingList, rulingAgree: rulingAgree, rulingDeny: rulingDeny,
+      favourable: favourable, verdict: verdict, fructifies: fructifies, config: config
+    };
+  };
+
+  // Assemble a rich context object used by both reasoning generators.
+  function buildContext(category, chart) {
+    const houses = CATEGORY_HOUSES[category];
+    const config = CATEGORY_CONFIG[category];
+    const label = interpret.CATEGORY_LABELS[category];
+    const j = interpret.gatherJudgment(chart, houses, config);
+    const moon = planetByName(chart, 'Moon');
+    const asc = chart.ascendant;
+    const pcusp = j.primaryCusp;
+    return {
+      chart: chart, category: category, houses: houses, config: config, label: label, j: j,
+      moon: moon, moonHouse: houseOfPlanet(chart, 'Moon'), asc: asc, pcusp: pcusp,
+      pSign: SIGN_NAMES[pcusp.sign], pSignLord: pcusp.signLord,
+      pStarLord: pcusp.starLord, pSubLord: pcusp.subLord, pNak: kp.nakshatraName(pcusp.longitude),
+      ascSign: SIGN_NAMES[asc.sign], ascLord: asc.signLord, ascStar: asc.starLord, ascSub: asc.subLord,
+      moonSign: SIGN_NAMES[moon.sign], moonNak: moon.nakshatraName,
+      moonStar: moon.starLord, moonSub: moon.subLord, rp: chart.rulingPlanets
+    };
+  }
+
+  // --- Category-specific KP passages ------------------------------------
+  function categoryKpNote(ctx) {
+    const chart = ctx.chart, j = ctx.j;
+    function sigOf(h) {
+      const s = chart.significators[h] || [];
+      return s.length ? listText(s) : 'none';
+    }
+    const afflicted = (j.subSig.indexOf(6) >= 0 || j.subSig.indexOf(8) >= 0 || j.subSig.indexOf(12) >= 0);
+    switch (ctx.category) {
+      case 'health':
+        return 'Specialised note (health): the 1st cuspal sub-lord ' + ctx.pSubLord + ' governs the body, while the 6-8-12 carry disease, chronic suffering and confinement. Here ' + ctx.pSubLord + ' ' + (afflicted ? 'is linked to the disease houses, so a clear ailment or a slow convalescence is indicated' : 'is free of the 6-8-12 affliction, so vitality is preserved and recovery is favoured') + '. The 6th-house significators (' + sigOf(6) + ') and the 8th (' + sigOf(8) + ') time the ailment and its crises.';
+      case 'marriage':
+        return 'Specialised note (marriage): the 7th cuspal sub-lord ' + ctx.pSubLord + ' is the deciding factor. Signifying 2, 7 or 11 it gives marriage; signifying 1, 6 or 10 it denies or delays it. Its actual signification is ' + (j.subSig.length ? listText(j.subSig) : 'unclear') + '. Venus, the kalatra-karaka, and the 7th significators (' + sigOf(7) + ') with the 11th (' + sigOf(11) + ') will fix the time of marriage.';
+      case 'career':
+        return 'Specialised note (career): the 10th cuspal sub-lord ' + ctx.pSubLord + ' rules profession and status. Linked to 2-6-10-11 it gives a job, rise or fresh appointment; linked to 5-8-9-12 it brings change, obstruction or loss. The 6th significators (' + sigOf(6) + ') show service, the 11th (' + sigOf(11) + ') the fulfilment of ambition.';
+      case 'litigation':
+        return 'Specialised note (litigation): the 6th (the querent\u2019s side) is set against the 7th (the opponent). The 6th cuspal sub-lord ' + chart.cusps[5].subLord + ' and its significators (' + sigOf(6) + ') must overpower the 7th significators (' + sigOf(7) + '). The 8th (' + sigOf(8) + ') shows defeat, fines or prolonged proceedings.';
+      case 'travel':
+        return 'Specialised note (travel): short trips are seen from the 3rd (' + sigOf(3) + '), long journeys from the 9th (' + sigOf(9) + '), and foreign or distant residence from the 12th (' + sigOf(12) + '). The 9th cuspal sub-lord ' + ctx.pSubLord + ' connected to 3-9-12 confirms that the movement actually occurs.';
+      case 'children':
+        return 'Specialised note (children): the 5th cuspal sub-lord ' + ctx.pSubLord + ' is judged with Jupiter (putra-karaka). Tied to 2-5-11 it promises progeny; tied to 1-4-10 it denies or delays it. The 5th significators (' + sigOf(5) + ') and the 11th (' + sigOf(11) + ') indicate conception and the fulfilment of the wish.';
+      case 'finance':
+        return 'Specialised note (finance): the 2nd cuspal sub-lord ' + ctx.pSubLord + ' governs accumulated wealth, with the 11th (' + sigOf(11) + ') for gains and the 6th (' + sigOf(6) + ') for recoverable loans. Tied to 2-6-11 it gives prosperity; tied to 5-8-12 (speculation, sudden loss, expenditure) it drains resources.';
+      case 'property':
+        return 'Specialised note (property): the 4th cuspal sub-lord ' + ctx.pSubLord + ' rules lands, house and vehicles. Connected to 4-11 it confirms acquisition; connected to 3-5-12 (loss of the immovable, investment, distant or disputed asset) it denies it. The 4th significators are ' + sigOf(4) + '.';
+      case 'education':
+        return 'Specialised note (education): the 4th and 5th cuspal sub-lords (here ' + ctx.pSubLord + ') with Mercury and Jupiter decide learning. Tied to 4-5-9-11 they give success and higher study; tied to 3-8-12 they bring interruption or change of course. The 9th significators (' + sigOf(9) + ') show higher and specialised learning.';
+      case 'enemies':
+        return 'Specialised note (enemies): the 6th (one\u2019s power over foes) with Mars is set against the 8th and 12th (defeat, hidden harm, loss). The 6th cuspal sub-lord ' + chart.cusps[5].subLord + ' tied to 6-11 gives victory; tied to 8-12 it leaves the querent troubled. The 6th significators are ' + sigOf(6) + '.';
+      case 'longevity':
+        return 'Specialised note (longevity): the 8th (ayur), 1st (body) and 3rd (8th-from-8th) are weighed against the marakas (2nd and 7th). The 8th cuspal sub-lord ' + ctx.pSubLord + ' free of strong maraka linkage favours a long span; tied to 2 or 7 it warns of a maraka period. Saturn (ayush-karaka) and the 8th significators (' + sigOf(8) + ') qualify the result.';
+      default:
+        return 'Specialised note: the cuspal sub-lord ' + ctx.pSubLord + ' signifies ' + (j.subSig.length ? listText(j.subSig) : 'no clear house') + '.';
+    }
+  }
+
+  // --- Category-specific classical (Hora Shastra) passages --------------
+  function categoryHoraNote(ctx, lordHouse, houseLord) {
+    const chart = ctx.chart;
+    const karaka = CATEGORY_KARAKA[ctx.category];
+    const karakaHouse = karaka ? houseOfPlanet(chart, karaka) : null;
+    const karakaTxt = karaka
+      ? (' The chief significator (karaka) ' + karaka + ' is a ' + NATURE[karaka] + ' planet placed in the ' + ordinal(karakaHouse) + ' house, and its strength ' + (NATURE[karaka] === 'malefic' ? 'must be carefully weighed, for an afflicted karaka harms the matter' : 'lends support when well placed') + '.')
+      : '';
+    switch (ctx.category) {
+      case 'health':
+        return 'Classical view (health): the strength of lagna lord ' + ctx.ascLord + ' and benefics on or aspecting the ascendant promise recovery, while malefics in the 6th/8th and a lagna lord in a dusthana show disease. Mars rules fevers and accidents, Saturn chronic and lingering complaints, and a Moon-Mercury affliction nervous trouble.' + karakaTxt;
+      case 'marriage':
+        return 'Classical view (marriage): the 7th house and Venus (kalatra-karaka) are examined. A benefic in or aspecting the 7th, and an unafflicted 7th lord, promise union; malefics there or a combust / debilitated Venus delay it.' + karakaTxt;
+      case 'career':
+        return 'Classical view (career): the 10th house (karma) and its lord, with the Sun and Saturn as karakas of authority and service, decide the profession. Benefic links to the 10th and 11th give rise and gain; afflictions bring demotion or instability.' + karakaTxt;
+      case 'litigation':
+        return 'Classical view (litigation): the lagna and its lord stand for the querent, the 7th and its lord for the opponent; Mars and Saturn show the conflict. A stronger lagna and 6th, with benefics aiding the querent, give victory; a stronger 7th favours the adversary.' + karakaTxt;
+      case 'travel':
+        return 'Classical view (travel): the Moon and the movable (chara) signs promote journeys, the 3rd and 9th lords and their dispositors fix near or distant travel, and the 12th with benefics points to foreign residence. Malefics in the 4th hold the native at home.' + karakaTxt;
+      case 'children':
+        return 'Classical view (children): the 5th house and Jupiter (putra-karaka) are read together. A benefic 5th lord, Jupiter strong and the 5th free of malefics promise progeny; an afflicted 5th, a weak Jupiter or malefics in the 5th deny or delay it.' + karakaTxt;
+      case 'finance':
+        return 'Classical view (finance): the 2nd (wealth) and 11th (gains) with their lords, and Jupiter (dhana-karaka), are examined. Benefics in the 2nd/11th and a strong 2nd lord give prosperity; malefics or a 2nd lord in the 12th show loss and expense.' + karakaTxt;
+      case 'property':
+        return 'Classical view (property): the 4th house (sukha, lands and dwellings), its lord, and Mars (the karaka of land) are judged. Benefics in or aspecting the 4th and a strong 4th lord give acquisition; afflictions deny or delay it.' + karakaTxt;
+      case 'education':
+        return 'Classical view (education): the 4th and 5th houses with Mercury (buddhi) and Jupiter (jnana) show learning. A strong 5th lord and benefic aspects give success in studies and examinations; malefics in the 4th/5th or a weak Mercury bring interruption.' + karakaTxt;
+      case 'enemies':
+        return 'Classical view (enemies): the 6th house (ripu) and Mars indicate the power to overcome foes. A strong 6th lord and benefics aiding the querent give victory, while malefics in the 8th/12th and a weak lagna leave the native harassed.' + karakaTxt;
+      case 'longevity':
+        return 'Classical view (longevity): the lagna and its lord (the body), the 8th house (ayur) and Saturn (ayush-karaka) are weighed against the maraka lords of the 2nd and 7th. A strong, unafflicted lagna and 8th give long life; powerful marakas operating in their periods threaten it.' + karakaTxt;
+      default:
+        return 'Classical view: the lagna lord ' + ctx.ascLord + ' and the relevant house lord ' + houseLord + ' are weighed with the Moon\u2019s testimony.' + karakaTxt;
+    }
+  }
+
+  // --- KP reasoning (elaborate, multi-paragraph) ------------------------
+  interpret.kpReasoning = function kpReasoning(category, chart) {
+    if (category === 'missingItem') return missingItemKp(chart);
+    const ctx = buildContext(category, chart);
+    const j = ctx.j;
+    const primSig = chart.significators[ctx.config.primary] || [];
+    const paras = [];
+
+    // (a) houses judged
+    paras.push('Houses judged for ' + ctx.label.name + ': ' + listText(ctx.houses) + '. ' + ctx.label.description);
+
+    // (b) cusp sub-lord of the primary house and what it signifies
+    paras.push('Cuspal sub-lord. The primary ' + ordinal(ctx.config.primary) + ' house cusp falls at ' +
+      fmtDeg(ctx.pcusp.longitude) + ' in ' + ctx.pSign + ' (sign-lord ' + ctx.pSignLord +
+      '), in the nakshatra ' + ctx.pNak + ' of star-lord ' + ctx.pStarLord +
+      ', and its sub-lord is ' + ctx.pSubLord + '. In KP the cuspal sub-lord is decisive: ' +
+      ctx.pSubLord + ' ' + (j.subSig.length ? ('signifies houses ' + listText(j.subSig)) : 'shows no clear house signification') + '. ' +
+      (j.favHit.length ? ('Because it touches the favourable house(s) ' + listText(j.favHit) + ', it supports ' + ctx.config.yes + '. ') : '') +
+      (j.negHit.length ? ('Because it also touches the negating house(s) ' + listText(j.negHit) + ', it warns of ' + ctx.config.no + '. ') : '') +
+      (!j.favHit.length && !j.negHit.length ? 'Its signification is neutral, so the supporting significators and ruling planets must decide. ' : ''));
+
+    // (c) significators in KP order
+    paras.push('Significators (KP order). The significators of the ' + ordinal(ctx.config.primary) + ' house are ' +
+      listText(primSig.length ? primSig : ['(none)']) + '. Across all the judged houses the chief significators are: ' +
+      ctx.houses.map(function (h) {
+        const s = chart.significators[h] || [];
+        return ordinal(h) + ' \u2192 ' + (s.length ? listText(s) : 'none');
+      }).join('; ') + '.');
+
+    // (d) ruling planets + fructification + timing
+    paras.push('Ruling Planets & fructification. At the Prashna moment the ruling planets are \u2014 day-lord ' +
+      ctx.rp.dayLord + ', Moon star-lord ' + ctx.rp.moonStarLord + ', Moon sign-lord ' + ctx.rp.moonSignLord +
+      ', Lagna star-lord ' + ctx.rp.lagnaStarLord + ', Lagna sign-lord ' + ctx.rp.lagnaSignLord +
+      ' (Moon sub-lord ' + ctx.rp.moonSubLord + ', Lagna sub-lord ' + ctx.rp.lagnaSubLord + '). ' +
+      (j.rulingAgree.length ? (listText(j.rulingAgree) + ' also signify the favourable houses') : 'none of the ruling planets clearly reinforce the favourable houses') +
+      (j.rulingDeny.length ? (', while ' + listText(j.rulingDeny) + ' lean toward the negating houses') : '') + '. ' +
+      (j.fructifies
+        ? ('Since the ruling planets agree with the favourable significators, the query is expected to fructify; the event should mature in the conjoined dasa / bhukti of ' + listText(dedup([ctx.pSubLord].concat(j.rulingAgree.slice(0, 2)))) + '.')
+        : ('Since the ruling planets do not sufficiently agree with the favourable significators, fructification is doubtful or delayed until a period of ' + listText(dedup([ctx.pSubLord].concat(j.rulingList.slice(0, 2)))) + ' operates.')));
+
+    // category-specialised passage
+    paras.push(categoryKpNote(ctx));
+
+    // (e) verdict
+    paras.push('KP verdict: ' + j.verdict + ' \u2014 the chart indicates ' + (j.favourable ? ctx.config.yes : ctx.config.no) + '.');
+
+    return paras.join('\n\n');
+  };
+
+  // --- Hora Shastra reasoning (elaborate, classical) --------------------
+  interpret.horaShastraReasoning = function horaShastraReasoning(category, chart) {
+    if (category === 'missingItem') return missingItemHora(chart);
+    const ctx = buildContext(category, chart);
+    const j = ctx.j;
+    const houseLord = ctx.pSignLord;
+    const lordHouse = houseOfPlanet(chart, houseLord);
+    const paras = [];
+
+    paras.push('Classical Hora Shastra reading for ' + ctx.label.name + '. The Prashna lagna rises in ' +
+      ctx.ascSign + ' at ' + fmtDeg(ctx.asc.longitude) + ', whose lord ' + ctx.ascLord +
+      ' (a ' + NATURE[ctx.ascLord] + ' planet) represents the querent; the ascendant lies in the star of ' + ctx.ascStar + '.');
+
+    paras.push('The Moon \u2014 the mind and the very life of a horary chart \u2014 is placed in ' + ctx.moonSign +
+      ' in the ' + ordinal(ctx.moonHouse) + ' bhava, in the nakshatra ' + ctx.moonNak + ' (lord ' + ctx.moonStar +
+      ', sub-lord ' + ctx.moonSub + '). A Moon so placed colours the query and ' +
+      (j.favourable ? 'lends its support to a favourable outcome' : 'cautions that the outcome will not come easily') + '.');
+
+    paras.push('The principal house for this question is the ' + ordinal(ctx.config.primary) +
+      ' from lagna; its lord is ' + houseLord +
+      (lordHouse != null ? (', posited in the ' + ordinal(lordHouse) + ' house') : '') +
+      '. ' + houseLord + ' is a ' + NATURE[houseLord] + ' planet, so its ' +
+      (NATURE[houseLord] === 'benefic' ? 'benefic disposition strengthens the matter'
+        : (NATURE[houseLord] === 'malefic' ? 'malefic disposition can obstruct the matter unless well aspected'
+          : 'mixed disposition gives a qualified result depending on its associations')) + '.');
+
+    paras.push(categoryHoraNote(ctx, lordHouse, houseLord));
+
+    paras.push('Weighing the strength and placement of the house lord ' + houseLord +
+      ', the benefic and malefic testimonies, the karaka, and the Moon\u2019s disposition, the traditional verdict is: ' +
+      (j.favourable
+        ? ('the question is answered in the affirmative \u2014 ' + ctx.config.yes + '.')
+        : ('the question is answered in the negative \u2014 ' + ctx.config.no + '.')));
+
+    return paras.join('\n\n');
+  };
+
+  // --- Missing-item module ----------------------------------------------
+
+  // Age from a cuspal sub-lord planet's nature.
+  function ageOldOrNew(p) {
+    // Saturn / Ketu / Rahu (and the heavy Sun, Mars) -> old; Moon / Venus / Mercury / Jupiter -> new.
+    return (['Saturn', 'Ketu', 'Rahu', 'Sun', 'Mars'].indexOf(p) >= 0) ? 'old' : 'new';
+  }
+
+  // Misplaced | lost | stolen, from KP rules.
+  function lossStatus(chart, psig) {
+    const cusp7 = chart.cusps[6];   // finder / thief
+    const cusp2 = chart.cusps[1];   // possession / recovery
+    const subl7 = cusp7.subLord;
+    const nodeSubLord = (subl7 === 'Rahu' || subl7 === 'Ketu');
+    const nodeSig = (psig.Rahu || []).concat(psig.Ketu || []);
+    const nodeOn7 = nodeSubLord || nodeSig.indexOf(7) >= 0;
+    const malefic7 = isMalefic(subl7);
+    const sig2 = psig[cusp2.subLord] || [];
+    const withinPremises = (sig2.indexOf(4) >= 0 || sig2.indexOf(2) >= 0);
+    if (nodeOn7 && malefic7) return 'stolen';
+    if (!malefic7 && withinPremises) return 'misplaced';
+    return 'lost';
+  }
+
+  // Probable present location when misplaced.
+  function locationDetail(chart, sigPlanet, psig) {
+    const p = planetByName(chart, sigPlanet);
+    const lon = p ? p.longitude : chart.cusps[1].longitude;
+    const sign = signOf(lon);
+    const el = SIGN_ELEMENT[sign];
+    const placeByEl = {
+      fire: 'near a source of heat \u2014 the kitchen, an electrical fitting, a heater or a fireplace',
+      earth: 'on or near the ground \u2014 a cupboard, drawer, store-room or a low shelf',
+      air: 'high up \u2014 on an upper shelf, loft, rack or some raised place',
+      water: 'near water \u2014 the bathroom, kitchen sink, a wet area or close to a container of liquid'
+    };
+    const sig = psig[sigPlanet] || [];
+    const inHouse = (sig.indexOf(4) >= 0 || sig.indexOf(2) >= 0);
+    return {
+      element: el, sign: SIGN_NAMES[sign], inHouse: inHouse,
+      description: 'The article is most probably ' +
+        (inHouse ? 'within the premises itself' : 'just outside or at the very edge of the premises') +
+        ', ' + placeByEl[el] + '. The significator ' + sigPlanet + ' in the ' + el +
+        ' sign ' + SIGN_NAMES[sign] + ' points to such a spot.'
+    };
+  }
+
+  // Direction / distance / landmarks when lost.
+  function lostDetail(chart, sigPlanet, psig) {
+    const p = planetByName(chart, sigPlanet);
+    const lon = p ? p.longitude : chart.cusps[1].longitude;
+    const sign = signOf(lon);
+    const el = SIGN_ELEMENT[sign];
+    const dir = DIRECTION[sigPlanet] || 'an uncertain bearing';
+    const house = p ? houseOfPlanet(chart, sigPlanet) : null;
+    let distance = 'a medium distance';
+    if (house != null) {
+      if (houseClass(house) === 'angular') distance = 'near';
+      else if (houseClass(house) === 'succedent') distance = 'a medium distance';
+      else distance = 'far';
+    }
+    const landmarkByEl = {
+      fire: 'a kitchen, factory, furnace or a temple with a sacred fire',
+      earth: 'a garden, field, tree, mound, or a cupboard / store',
+      air: 'a tall building, tower, terrace or an open windy place',
+      water: 'a well, tank, river, drain or another water body'
+    };
+    return {
+      direction: dir, distance: distance, landmarks: landmarkByEl[el],
+      description: 'The article was lost toward the ' + dir + ' (the direction of its significator ' + sigPlanet +
+        '), at ' + distance + ' from the place of enquiry (the significator stands in ' +
+        (house != null ? ('the ' + ordinal(house) + ' \u2014 a ' + houseClass(house) + ' \u2014 house') : 'a cadent house') +
+        '). Look for landmarks such as ' + landmarkByEl[el] + '.'
+    };
+  }
+
+  // Thief profile / origin / possession / recovery when stolen.
+  function thiefDetail(chart, psig) {
+    const cusp7 = chart.cusps[6];
+    const thiefPlanet = cusp7.subLord;
+    const tp = planetByName(chart, thiefPlanet);
+    const thouse = tp ? houseOfPlanet(chart, thiefPlanet) : 7;
+    const sign = tp ? signOf(tp.longitude) : cusp7.sign;
+    const origin = (DIRECTION[thiefPlanet] || 'an unknown direction') + ' (from ' + SIGN_NAMES[sign] + ')';
+
+    const sig11 = psig[chart.cusps[10].subLord] || [];
+    const sig2 = psig[chart.cusps[1].subLord] || [];
+    const stillHas = (sig11.indexOf(2) >= 0 || sig11.indexOf(11) >= 0 || sig2.indexOf(2) >= 0);
+
+    const rp = chart.rulingPlanets;
+    const rl = dedup([rp.dayLord, rp.moonStarLord, rp.moonSignLord, rp.lagnaStarLord, rp.lagnaSignLord]);
+    const sig2nd = chart.significators[2] || [];
+    const sig11th = chart.significators[11] || [];
+    const willRecover = rl.some(function (n) { return sig2nd.indexOf(n) >= 0 || sig11th.indexOf(n) >= 0; });
+
+    return {
+      profile: buildFromPlanet(thiefPlanet) + '; in relationship, ' + relationFromHouse(thouse),
+      origin: origin,
+      stillHasItem: stillHas,
+      willRecover: willRecover,
+      timing: willRecover
+        ? ('recovery is shown during the period of ' + listText(dedup(rl).slice(0, 2)))
+        : 'recovery is not promised in the near term'
+    };
+  }
+
+  function relationFromHouse(h) {
+    switch (h) {
+      case 2: case 4: return 'a member of the household or family';
+      case 3: return 'a sibling, neighbour or someone living close by';
+      case 5: case 11: return 'a known person, friend or acquaintance';
+      case 6: return 'a servant, employee or subordinate';
+      case 7: return 'an outsider or complete stranger';
+      case 10: return 'someone in authority or a known professional';
+      default: return 'a person connected with the ' + ordinal(h) + ' house';
+    }
+  }
+  function buildFromPlanet(p) {
+    const m = {
+      Sun: 'a confident, authoritative person of medium build',
+      Moon: 'a young, fair or round-faced person',
+      Mars: 'a strong, energetic young male, possibly with a scar or reddish complexion',
+      Mercury: 'a youthful, clever and talkative person',
+      Jupiter: 'an elderly, stout or respectable-looking person',
+      Venus: 'an attractive, well-dressed person, possibly female',
+      Saturn: 'a thin, dark, older person, slow in manner',
+      Rahu: 'a cunning, unconventional or foreign-looking person',
+      Ketu: 'a strange, reclusive or unpredictable person'
+    };
+    return m[p] || ('a person of the nature of ' + p);
+  }
+
+  // Structured missing-item judgment.
+  interpret.judgeMissingItem = function judgeMissingItem(chart) {
+    const psig = interpret.planetHouseSignifications(chart);
+    const cusp2 = chart.cusps[1];
+    const cusp4 = chart.cusps[3];
+    const sigPlanet = cusp2.subLord;            // sub-lord of the 2nd cusp = the article
+    const ageLord = cusp4.subLord;              // sub-lord of the 4th cusp = age of the article
+    const age = ageOldOrNew(ageLord);
+    const material = MATERIAL[sigPlanet] || MATERIAL.Mercury;
+    const status = lossStatus(chart, psig);
+
+    const out = {
+      age: age, ageLord: ageLord, sigPlanet: sigPlanet, material: material,
+      status: status, location: null, lostDetail: null, thief: null
+    };
+    if (status === 'misplaced') out.location = locationDetail(chart, sigPlanet, psig);
+    else if (status === 'lost') out.lostDetail = lostDetail(chart, sigPlanet, psig);
+    else out.thief = thiefDetail(chart, psig);
+    return out;
+  };
+
+  // Elaborate KP prose for the missing-item query.
+  function missingItemKp(chart) {
+    const mi = interpret.judgeMissingItem(chart);
+    const houses = CATEGORY_HOUSES.missingItem;
+    const rp = chart.rulingPlanets;
+    function sigOf(h) { const s = chart.significators[h] || []; return s.length ? listText(s) : 'none'; }
+    const paras = [];
+
+    paras.push('Houses judged for the missing article: ' + listText(houses) +
+      '. In KP the 2nd shows possession and recovery, the 11th the return of the article, the 4th the place / within the premises, the 7th the finder or thief, and the 6th the loss or theft itself.');
+
+    paras.push('Nature of the article. Its significator is ' + mi.sigPlanet +
+      ' (the sub-lord of the 2nd cusp), which by its nature points to ' + mi.material +
+      '. The sub-lord of the 4th cusp, ' + mi.ageLord + ', shows the article is ' + mi.age.toUpperCase() +
+      ' (' + (mi.age === 'old' ? 'an older or used object' : 'a new or recently acquired object') + ').');
+
+    paras.push('Classification. The sub-lord of the 7th cusp is ' + chart.cusps[6].subLord +
+      ' (' + NATURE[chart.cusps[6].subLord] + '); weighing node-involvement and the benefic / malefic testimony against the 2nd and 11th connections, the article is judged to be ' +
+      mi.status.toUpperCase() + '.');
+
+    if (mi.status === 'misplaced') {
+      paras.push('As a misplaced article. ' + mi.location.description +
+        ' The matter is one of oversight rather than true loss, so a careful search of the indicated spot should restore it.');
+    } else if (mi.status === 'lost') {
+      paras.push('As a lost article. ' + mi.lostDetail.description +
+        ' Direction: ' + mi.lostDetail.direction + '; distance: ' + mi.lostDetail.distance +
+        '; landmarks: ' + mi.lostDetail.landmarks + '.');
+    } else {
+      const t = mi.thief;
+      paras.push('As a stolen article. The thief appears to be ' + t.profile + ', coming from ' + t.origin +
+        '. The thief ' + (t.stillHasItem ? 'still appears to hold the article' : 'may have already passed on or disposed of the article') +
+        '. Recovery is ' + (t.willRecover ? ('indicated \u2014 ' + t.timing + '.') : ('doubtful \u2014 ' + t.timing + '.')));
+    }
+
+    const recoverers = (chart.significators[2] || []).concat(chart.significators[11] || []);
+    const rulingSet = [rp.dayLord, rp.moonStarLord, rp.moonSignLord, rp.lagnaStarLord, rp.lagnaSignLord];
+    const supported = recoverers.some(function (n) { return rulingSet.indexOf(n) >= 0; });
+    paras.push('Ruling Planets. Day-lord ' + rp.dayLord + ', Moon star-lord ' + rp.moonStarLord +
+      ', Lagna star-lord ' + rp.lagnaStarLord + ', Lagna sign-lord ' + rp.lagnaSignLord +
+      '. The recovery houses are signified by \u2014 2nd: ' + sigOf(2) + '; 11th: ' + sigOf(11) + '. ' +
+      (supported ? 'A ruling planet also signifies the 2nd / 11th, so recovery is supported and timed by its period.'
+        : 'No ruling planet strongly signifies the 2nd / 11th, so recovery is weak and uncertain.'));
+
+    return paras.join('\n\n');
+  }
+
+  // Elaborate classical prose for the missing-item query.
+  function missingItemHora(chart) {
+    const mi = interpret.judgeMissingItem(chart);
+    const asc = chart.ascendant;
+    const moon = planetByName(chart, 'Moon');
+    const paras = [];
+
+    paras.push('Classical reading for the missing article. The lagna is ' + SIGN_NAMES[asc.sign] +
+      ' (lord ' + asc.signLord + '), and the Moon is in ' + SIGN_NAMES[moon.sign] +
+      ' in the nakshatra ' + moon.nakshatraName + ' (lord ' + moon.starLord +
+      '). The sign tenanted by the indicating planet describes the article and the place where it rests.');
+
+    paras.push('By the nature of the indicating planet ' + mi.sigPlanet + ', the article belongs to the class of ' +
+      mi.material + ', and the 4th-cusp testimony of ' + mi.ageLord + ' shows it to be ' + (mi.age === 'old' ? 'an old' : 'a new') + ' object.');
+
+    if (mi.status === 'misplaced') {
+      paras.push('The testimony shows the article is merely MISPLACED, not truly gone. ' +
+        mi.location.description + ' Search calmly within reach before assuming a loss.');
+    } else if (mi.status === 'lost') {
+      paras.push('The testimony shows the article is LOST. ' + mi.lostDetail.description +
+        ' The classical direction (' + mi.lostDetail.direction + ') and landmarks (' + mi.lostDetail.landmarks +
+        ') should guide the search.');
+    } else {
+      const t = mi.thief;
+      paras.push('The testimony shows the article is STOLEN. The traditional description of the taker: ' +
+        t.profile + ', arriving from ' + t.origin + '. ' +
+        (t.stillHasItem ? 'The article is likely still with the taker.' : 'The article may already have changed hands.') +
+        ' ' + (t.willRecover ? ('Signs favour eventual recovery \u2014 ' + t.timing + '.') : ('Signs do not favour recovery \u2014 ' + t.timing + '.')));
+    }
+
+    paras.push('The Moon\u2019s placement and the benefic or malefic planets aspecting the relevant houses confirm the above: a benefic testimony eases recovery, while a malefic \u2014 especially with the nodes Rahu or Ketu \u2014 hardens the loss.');
+
+    return paras.join('\n\n');
+  }
+
+  // --- Public dispatch ---------------------------------------------------
+  // interpret(category, chart) -> { category, label, houses, horaShastra, kp, missingItem }
+  interpret.interpret = function interpretQuery(category, chart) {
+    if (!CATEGORY_HOUSES[category]) throw new Error('Unknown query category: ' + category);
+    const label = interpret.CATEGORY_LABELS[category];
+    return {
+      category: category,
+      label: label ? label.name : category,
+      houses: CATEGORY_HOUSES[category].slice(),
+      horaShastra: interpret.horaShastraReasoning(category, chart),
+      kp: interpret.kpReasoning(category, chart),
+      missingItem: (category === 'missingItem') ? interpret.judgeMissingItem(chart) : null
+    };
+  };
+
+  // Convenience top-level alias.
+  KPApp.interpretQuery = interpret.interpret;
+
+  /* =====================================================================
+   * UI LAYER  (KPApp.ui)
+   * ---------------------------------------------------------------------
+   * Builds the Manual / Instant Prashna forms, validates input, runs the
+   * full pipeline (astro.localToJD -> kp.buildChart -> interpret.interpret)
+   * and renders the result cards. Pure helpers (runAnalysis,
+   * buildResultsHtml) are DOM-free so the pipeline is verifiable in Node.
+   * All operation is fully offline -- no network calls.
+   * ===================================================================== */
+  const ui = KPApp.ui;
+
+  ui.SIGN_NAMES = interpret.SIGN_NAMES;
+
+  // --- Offline city lookup table ----------------------------------------
+  // { name, lat, lon, tz } -- tz is the standard UTC offset in hours
+  // (east positive). DST is ignored; users may edit any field after picking.
+  ui.CITIES = [
+    { name: 'Mumbai',        lat: 19.0760,  lon: 72.8777,  tz: 5.5 },
+    { name: 'Delhi',         lat: 28.6139,  lon: 77.2090,  tz: 5.5 },
+    { name: 'Pune',          lat: 18.5204,  lon: 73.8567,  tz: 5.5 },
+    { name: 'Bengaluru',     lat: 12.9716,  lon: 77.5946,  tz: 5.5 },
+    { name: 'Chennai',       lat: 13.0827,  lon: 80.2707,  tz: 5.5 },
+    { name: 'Kolkata',       lat: 22.5726,  lon: 88.3639,  tz: 5.5 },
+    { name: 'Hyderabad',     lat: 17.3850,  lon: 78.4867,  tz: 5.5 },
+    { name: 'Ahmedabad',     lat: 23.0225,  lon: 72.5714,  tz: 5.5 },
+    { name: 'Nagpur',        lat: 21.1458,  lon: 79.0882,  tz: 5.5 },
+    { name: 'Jaipur',        lat: 26.9124,  lon: 75.7873,  tz: 5.5 },
+    { name: 'Lucknow',       lat: 26.8467,  lon: 80.9462,  tz: 5.5 },
+    { name: 'Surat',         lat: 21.1702,  lon: 72.8311,  tz: 5.5 },
+    { name: 'Kanpur',        lat: 26.4499,  lon: 80.3319,  tz: 5.5 },
+    { name: 'Indore',        lat: 22.7196,  lon: 75.8577,  tz: 5.5 },
+    { name: 'Bhopal',        lat: 23.2599,  lon: 77.4126,  tz: 5.5 },
+    { name: 'Patna',         lat: 25.5941,  lon: 85.1376,  tz: 5.5 },
+    { name: 'Kochi',         lat: 9.9312,   lon: 76.2673,  tz: 5.5 },
+    { name: 'Chandigarh',    lat: 30.7333,  lon: 76.7794,  tz: 5.5 },
+    { name: 'Varanasi',      lat: 25.3176,  lon: 82.9739,  tz: 5.5 },
+    { name: 'Kathmandu',     lat: 27.7172,  lon: 85.3240,  tz: 5.75 },
+    { name: 'Colombo',       lat: 6.9271,   lon: 79.8612,  tz: 5.5 },
+    { name: 'Karachi',       lat: 24.8607,  lon: 67.0011,  tz: 5 },
+    { name: 'Dhaka',         lat: 23.8103,  lon: 90.4125,  tz: 6 },
+    { name: 'London',        lat: 51.5074,  lon: -0.1278,  tz: 0 },
+    { name: 'New York',      lat: 40.7128,  lon: -74.0060, tz: -5 },
+    { name: 'Los Angeles',   lat: 34.0522,  lon: -118.2437,tz: -8 },
+    { name: 'Chicago',       lat: 41.8781,  lon: -87.6298, tz: -6 },
+    { name: 'San Francisco', lat: 37.7749,  lon: -122.4194,tz: -8 },
+    { name: 'Toronto',       lat: 43.6532,  lon: -79.3832, tz: -5 },
+    { name: 'Dubai',         lat: 25.2048,  lon: 55.2708,  tz: 4 },
+    { name: 'Singapore',     lat: 1.3521,   lon: 103.8198, tz: 8 },
+    { name: 'Hong Kong',     lat: 22.3193,  lon: 114.1694, tz: 8 },
+    { name: 'Sydney',        lat: -33.8688, lon: 151.2093, tz: 11 },
+    { name: 'Auckland',      lat: -36.8485, lon: 174.7633, tz: 13 },
+    { name: 'Tokyo',         lat: 35.6762,  lon: 139.6503, tz: 9 },
+    { name: 'Paris',         lat: 48.8566,  lon: 2.3522,   tz: 1 },
+    { name: 'Berlin',        lat: 52.5200,  lon: 13.4050,  tz: 1 },
+    { name: 'Moscow',        lat: 55.7558,  lon: 37.6173,  tz: 3 },
+    { name: 'Johannesburg',  lat: -26.2041, lon: 28.0473,  tz: 2 }
+  ];
+
+  // Quick lookup by case-insensitive city name.
+  ui.findCity = function findCity(name) {
+    if (!name) return null;
+    const key = String(name).trim().toLowerCase();
+    for (let i = 0; i < ui.CITIES.length; i++) {
+      if (ui.CITIES[i].name.toLowerCase() === key) return ui.CITIES[i];
+    }
+    return null;
+  };
+
+  // --- Query categories (label -> interpret category key) ---------------
+  ui.CATEGORIES = [
+    { key: 'health',     label: 'Health' },
+    { key: 'marriage',   label: 'Marriage' },
+    { key: 'career',     label: 'Career & Profession' },
+    { key: 'litigation', label: 'Litigation & Disputes' },
+    { key: 'travel',     label: 'Travel & Journeys' },
+    { key: 'children',   label: 'Children & Progeny' },
+    { key: 'finance',    label: 'Finance & Wealth' },
+    { key: 'property',   label: 'Property & Real Estate' },
+    { key: 'education',  label: 'Education & Learning' },
+    { key: 'enemies',    label: 'Enemies & Opposition' },
+    { key: 'longevity',  label: 'Longevity' },
+    { key: 'missingItem',label: 'Missing / Lost Article' }
+  ];
+
+  // --- Small formatting helpers (DOM-free) ------------------------------
+
+  // Degree formatted as DD MM' Sign.
+  ui.fmtDeg = function fmtDeg(lon) {
+    const L = normalize360(lon);
+    const s = Math.floor(L / 30) % 12;
+    const within = L - Math.floor(L / 30) * 30;
+    let d = Math.floor(within);
+    let m = Math.round((within - d) * 60);
+    if (m === 60) { d += 1; m = 0; }
+    return d + '\u00b0' + (m < 10 ? '0' : '') + m + "' " + ui.SIGN_NAMES[s];
+  };
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function categoryLabel(key) {
+    for (let i = 0; i < ui.CATEGORIES.length; i++) {
+      if (ui.CATEGORIES[i].key === key) return ui.CATEGORIES[i].label;
+    }
+    return key;
+  }
+
+  function weekdayName(idx) {
+    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][((idx % 7) + 7) % 7];
+  }
+
+  // Weekday (0=Sun..6=Sat) of a civil date string "YYYY-MM-DD".
+  ui.weekdayOf = function weekdayOf(dateStr) {
+    const dm = /^(\d{1,4})-(\d{1,2})-(\d{1,2})$/.exec(String(dateStr).trim());
+    if (!dm) return null;
+    const dt = new Date(Date.UTC(parseInt(dm[1], 10), parseInt(dm[2], 10) - 1, parseInt(dm[3], 10)));
+    return dt.getUTCDay();
+  };
+
+  // --- Validation (Part C) ----------------------------------------------
+  // Returns { ok:true, value:{...} } or { ok:false, message:'...' }.
+  ui.validateInput = function validateInput(raw) {
+    if (!raw.date || !/^\d{1,4}-\d{1,2}-\d{1,2}$/.test(String(raw.date).trim())) {
+      return { ok: false, message: 'Please provide a valid Date.' };
+    }
+    if (!raw.time || !/^\d{1,2}:\d{1,2}(?::\d{1,2})?$/.test(String(raw.time).trim())) {
+      return { ok: false, message: 'Please provide a valid Time.' };
+    }
+    const lat = parseFloat(raw.lat);
+    if (raw.lat === '' || raw.lat == null || !isFinite(lat) || lat < -90 || lat > 90) {
+      return { ok: false, message: 'Please provide a valid Latitude between -90 and 90.' };
+    }
+    const lon = parseFloat(raw.lon);
+    if (raw.lon === '' || raw.lon == null || !isFinite(lon) || lon < -180 || lon > 180) {
+      return { ok: false, message: 'Please provide a valid Longitude between -180 and 180.' };
+    }
+    const tz = parseFloat(raw.tz);
+    if (raw.tz === '' || raw.tz == null || !isFinite(tz)) {
+      return { ok: false, message: 'Please provide a valid numeric Timezone offset (hours).' };
+    }
+    const category = raw.category;
+    if (!category || !interpret.CATEGORY_HOUSES[category]) {
+      return { ok: false, message: 'Please select a Query category.' };
+    }
+
+    // Horary number is optional, but if present must be an integer in range.
+    let horary = null;
+    const hraw = (raw.horary == null) ? '' : String(raw.horary).trim();
+    if (hraw !== '') {
+      const n = Number(hraw);
+      if (!isFinite(n) || Math.floor(n) !== n || n < 1 || n > kp.HORARY_COUNT) {
+        return {
+          ok: false,
+          message: 'KP Horary number must be a whole number between 1 and ' +
+            kp.HORARY_COUNT + ' (or left blank).'
+        };
+      }
+      horary = n;
+    }
+
+    return {
+      ok: true,
+      value: {
+        date: String(raw.date).trim(),
+        time: String(raw.time).trim(),
+        lat: lat, lon: lon, tz: tz,
+        category: category,
+        horary: horary,
+        place: raw.place ? String(raw.place).trim() : '',
+        mode: raw.mode || 'manual'
+      }
+    };
+  };
+
+  // --- Pipeline (DOM-free) ----------------------------------------------
+  // input must already be validated. Returns { chart, result }.
+  ui.runAnalysis = function runAnalysis(input) {
+    const jd = astro.localToJD(input.date, input.time, input.tz);
+    let weekday = ui.weekdayOf(input.date);
+    if (weekday == null) weekday = astro.weekdayIndex(jd);
+    const opts = {
+      jd: jd,
+      latitude: input.lat,
+      longitude: input.lon,
+      timezone: input.tz,
+      weekday: weekday,
+      mode: input.mode || 'manual'
+    };
+    if (typeof input.horary === 'number') opts.horaryNumber = input.horary;
+    const chart = kp.buildChart(opts);
+    const result = interpret.interpret(input.category, chart);
+    return { chart: chart, result: result };
+  };
+
+  // --- Rendering helpers (DOM-free, return HTML strings) ----------------
+
+  // Convert a "\n\n"-separated analysis string into <p> elements, bolding the
+  // short leading label (text before the first period) of each paragraph.
+  function renderParagraphs(text) {
+    const paras = String(text || '').split(/\n\n+/);
+    return paras.map(function (para) {
+      const p = para.trim();
+      if (!p) return '';
+      const m = /^([^.]{1,60})\.\s+([\s\S]+)$/.exec(p);
+      if (m) {
+        return '<p><strong>' + esc(m[1]) + '.</strong> ' + esc(m[2]) + '</p>';
+      }
+      // Verdict lines get emphasis.
+      if (/^(KP verdict|.*verdict is)/i.test(p)) {
+        return '<p class="verdict-line">' + esc(p) + '</p>';
+      }
+      return '<p>' + esc(p) + '</p>';
+    }).join('');
+  }
+
+  function card(title, bodyHtml) {
+    return '<div class="card"><h2 class="section-title">' + esc(title) + '</h2>' + bodyHtml + '</div>';
+  }
+
+  function attributionHtml() {
+    return '<div class="card results-attribution"><span class="dev">Developed by Dr. Anil Sabaji</span>, ' +
+      'Email: <a href="mailto:anilsabaji@gmail.com">anilsabaji@gmail.com</a></div>';
+  }
+
+  // 1. Prashna Details card.
+  function prashnaDetailsCard(input, chart) {
+    const rows = [];
+    function row(k, v) { rows.push('<tr><th>' + esc(k) + '</th><td>' + v + '</td></tr>'); }
+    row('Date', esc(input.date));
+    row('Time', esc(input.time));
+    if (input.place) row('Place', esc(input.place));
+    row('Latitude', esc(input.lat.toFixed(4)) + '&deg;');
+    row('Longitude', esc(input.lon.toFixed(4)) + '&deg;');
+    row('Timezone', 'UTC' + (input.tz >= 0 ? '+' : '') + input.tz);
+    row('Mode', esc(chart.meta.mode === 'instant' ? 'Instant Prashna' : 'Manual Prashna'));
+    row('Ayanamsa (KP)', ui.fmtDeg(chart.ayanamsa).replace(/ [A-Za-z]+$/, '') + ' (' + chart.ayanamsa.toFixed(4) + '&deg;)');
+    row('Weekday', esc(weekdayName(chart.meta.weekday)));
+    row('Query', esc(categoryLabel(input.category)));
+    if (chart.horaryAscendant) {
+      row('Horary Number', esc(chart.horaryNumber) + ' of ' + kp.HORARY_COUNT);
+      row('Horary Ascendant', ui.fmtDeg(chart.horaryAscendant.degree) +
+        ' &mdash; sub-lord <strong>' + esc(chart.horaryAscendant.subLord) + '</strong>' +
+        ' (star-lord ' + esc(chart.horaryAscendant.starLord) + ', sign-lord ' + esc(chart.horaryAscendant.signLord) + ')');
+    } else if (input.horary != null) {
+      row('Horary Number', esc(input.horary) + ' (out of range &mdash; not applied)');
+    } else {
+      row('Horary Number', '<em>not provided</em>');
+    }
+    return card('Prashna Details', '<table>' + rows.join('') + '</table>');
+  }
+
+  // 2. Planetary Positions card.
+  function planetTableCard(chart) {
+    const head = '<tr><th>Planet</th><th>Longitude</th><th>Sign</th><th>Nakshatra</th>' +
+      '<th>Star-Lord</th><th>Sub-Lord</th><th>Retro</th></tr>';
+    const body = chart.planets.map(function (p) {
+      return '<tr><td>' + esc(p.name) + '</td>' +
+        '<td>' + ui.fmtDeg(p.longitude) + '</td>' +
+        '<td>' + esc(ui.SIGN_NAMES[p.sign]) + '</td>' +
+        '<td>' + esc(p.nakshatraName) + '</td>' +
+        '<td>' + esc(p.starLord) + '</td>' +
+        '<td>' + esc(p.subLord) + '</td>' +
+        '<td>' + (p.retrograde ? 'R' : '&mdash;') + '</td></tr>';
+    }).join('');
+    return card('Planetary Positions', '<table>' + head + body + '</table>');
+  }
+
+  // 3. House Cusps card.
+  function cuspTableCard(chart) {
+    const head = '<tr><th>House</th><th>Cusp</th><th>Sign</th><th>Sign-Lord</th>' +
+      '<th>Star-Lord</th><th>Sub-Lord</th></tr>';
+    const body = chart.cusps.map(function (c) {
+      return '<tr><td>' + esc(c.house) + '</td>' +
+        '<td>' + ui.fmtDeg(c.longitude) + '</td>' +
+        '<td>' + esc(ui.SIGN_NAMES[c.sign]) + '</td>' +
+        '<td>' + esc(c.signLord) + '</td>' +
+        '<td>' + esc(c.starLord) + '</td>' +
+        '<td>' + esc(c.subLord) + '</td></tr>';
+    }).join('');
+    return card('House Cusps', '<table>' + head + body + '</table>');
+  }
+
+  // 4. House Significators card.
+  function significatorsCard(chart) {
+    const head = '<tr><th>House</th><th>Significators (KP order)</th></tr>';
+    let body = '';
+    for (let h = 1; h <= 12; h++) {
+      const sig = chart.significators[h] || [];
+      body += '<tr><td>' + h + '</td><td>' + (sig.length ? esc(sig.join(', ')) : '&mdash;') + '</td></tr>';
+    }
+    return card('House Significators', '<table>' + head + body + '</table>');
+  }
+
+  // 5. Ruling Planets card.
+  function rulingPlanetsCard(chart) {
+    const rp = chart.rulingPlanets;
+    const rows = [
+      ['Day-Lord', rp.dayLord],
+      ['Moon Sign-Lord', rp.moonSignLord],
+      ['Moon Star-Lord', rp.moonStarLord],
+      ['Moon Sub-Lord', rp.moonSubLord],
+      ['Lagna Sign-Lord', rp.lagnaSignLord],
+      ['Lagna Star-Lord', rp.lagnaStarLord],
+      ['Lagna Sub-Lord', rp.lagnaSubLord]
+    ];
+    const body = rows.map(function (r) {
+      return '<tr><th>' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>';
+    }).join('');
+    return card('Ruling Planets', '<table>' + body + '</table>');
+  }
+
+  // 8. Missing-item findings card.
+  function missingItemCard(result) {
+    const mi = result.missingItem;
+    if (!mi) return '';
+    const rows = [];
+    function row(k, v) { rows.push('<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'); }
+    row('Status', mi.status.toUpperCase());
+    row('Age', mi.age === 'old' ? 'Old / used object' : 'New / recently acquired');
+    row('Significator', mi.sigPlanet);
+    row('Material / type', mi.material);
+    let detailHtml = '';
+    if (mi.status === 'misplaced' && mi.location) {
+      detailHtml = '<p>' + esc(mi.location.description) + '</p>';
+    } else if (mi.status === 'lost' && mi.lostDetail) {
+      row('Direction', mi.lostDetail.direction);
+      row('Distance', mi.lostDetail.distance);
+      row('Landmarks', mi.lostDetail.landmarks);
+      detailHtml = '<p>' + esc(mi.lostDetail.description) + '</p>';
+    } else if (mi.status === 'stolen' && mi.thief) {
+      row('Thief profile', mi.thief.profile);
+      row('Origin / bearing', mi.thief.origin);
+      row('Still holds item', mi.thief.stillHasItem ? 'Likely yes' : 'May have passed it on');
+      row('Recovery', (mi.thief.willRecover ? 'Indicated \u2014 ' : 'Doubtful \u2014 ') + mi.thief.timing);
+    }
+    return card('Missing Article \u2014 Findings', '<table>' + rows.join('') + '</table>' + detailHtml);
+  }
+
+  // Build the full results HTML (DOM-free). input is the validated value.
+  ui.buildResultsHtml = function buildResultsHtml(input, chart, result) {
+    let html = '';
+    html += prashnaDetailsCard(input, chart);
+    html += planetTableCard(chart);
+    html += cuspTableCard(chart);
+    html += significatorsCard(chart);
+    html += rulingPlanetsCard(chart);
+    html += card('KP Analysis (with Ruling Planets)', '<div class="analysis">' + renderParagraphs(result.kp) + '</div>');
+    html += card('Hora Shastra Analysis', '<div class="analysis">' + renderParagraphs(result.horaShastra) + '</div>');
+    if (input.category === 'missingItem') html += missingItemCard(result);
+    html += attributionHtml();
+    return html;
+  };
+
+  // --- Form construction -------------------------------------------------
+
+  function categoryOptionsHtml() {
+    return '<option value="">-- Select a query --</option>' +
+      ui.CATEGORIES.map(function (c) {
+        return '<option value="' + esc(c.key) + '">' + esc(c.label) + '</option>';
+      }).join('');
+  }
+
+  function cityDatalistHtml(id) {
+    return '<datalist id="' + id + '">' +
+      ui.CITIES.map(function (c) { return '<option value="' + esc(c.name) + '"></option>'; }).join('') +
+      '</datalist>';
+  }
+
+  // Build a form (manual or instant) with id-prefixed fields.
+  function buildFormHtml(prefix, mode) {
+    const isInstant = (mode === 'instant');
+    const btnLabel = isInstant ? 'Analyze Prashna (Now)' : 'Analyze Prashna';
+    const locHidden = isInstant ? '' : ''; // manual: location block always visible
+    const geoMsg = isInstant
+      ? '<div id="' + prefix + '-geo" class="form-msg info"></div>'
+      : '';
+    const cityHint = isInstant
+      ? 'Detected automatically; pick a city or edit the values below if needed.'
+      : 'Start typing a city to auto-fill latitude, longitude and timezone (all editable).';
+
+    return '' +
+      '<div class="card form-card" id="' + prefix + '-form">' +
+        '<div class="form-grid">' +
+          '<div class="field">' +
+            '<label for="' + prefix + '-date">Date</label>' +
+            '<input type="date" id="' + prefix + '-date" />' +
+          '</div>' +
+          '<div class="field">' +
+            '<label for="' + prefix + '-time">Time</label>' +
+            '<input type="time" id="' + prefix + '-time" step="60" />' +
+          '</div>' +
+          '<div class="field full">' +
+            '<label for="' + prefix + '-city">Place / City</label>' +
+            '<input type="text" id="' + prefix + '-city" list="' + prefix + '-cities" ' +
+              'placeholder="e.g. Mumbai" autocomplete="off" />' +
+            cityDatalistHtml(prefix + '-cities') +
+            '<span class="hint">' + cityHint + '</span>' +
+          '</div>' +
+          '<fieldset class="loc-block" id="' + prefix + '-loc">' +
+            '<legend>Location coordinates</legend>' +
+            '<div class="form-grid">' +
+              '<div class="field">' +
+                '<label for="' + prefix + '-lat">Latitude</label>' +
+                '<input type="number" step="any" id="' + prefix + '-lat" placeholder="-90 to 90" />' +
+              '</div>' +
+              '<div class="field">' +
+                '<label for="' + prefix + '-lon">Longitude</label>' +
+                '<input type="number" step="any" id="' + prefix + '-lon" placeholder="-180 to 180" />' +
+              '</div>' +
+              '<div class="field">' +
+                '<label for="' + prefix + '-tz">Timezone (UTC offset, hours)</label>' +
+                '<input type="number" step="any" id="' + prefix + '-tz" placeholder="e.g. 5.5" />' +
+              '</div>' +
+            '</div>' +
+          '</fieldset>' +
+          '<div class="field">' +
+            '<label for="' + prefix + '-category">Query Category</label>' +
+            '<select id="' + prefix + '-category">' + categoryOptionsHtml() + '</select>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label for="' + prefix + '-horary">KP Horary Number (1\u2013' + kp.HORARY_COUNT + ')</label>' +
+            '<input type="number" min="1" max="' + kp.HORARY_COUNT + '" step="1" ' +
+              'id="' + prefix + '-horary" placeholder="optional, 1\u2013' + kp.HORARY_COUNT + '" />' +
+            '<span class="hint">Optional but recommended for KP horary analysis.</span>' +
+          '</div>' +
+        '</div>' +
+        geoMsg +
+        '<button type="button" class="btn-primary" id="' + prefix + '-analyze">' + btnLabel + '</button>' +
+        '<div id="' + prefix + '-error" class="form-msg error"></div>' +
+      '</div>';
+  }
+
+  // --- DOM glue ----------------------------------------------------------
+
+  function $(id) { return document.getElementById(id); }
+
+  function showMsg(el, text, kind) {
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'form-msg ' + (kind || 'error') + ' show';
+  }
+  function hideMsg(el) {
+    if (!el) return;
+    el.textContent = '';
+    el.className = 'form-msg ' + (el.classList.contains('info') ? 'info' : 'error');
+  }
+
+  // Wire city autofill for a form prefix.
+  function wireCityAutofill(prefix) {
+    const cityEl = $(prefix + '-city');
+    if (!cityEl) return;
+    cityEl.addEventListener('change', function () {
+      const c = ui.findCity(cityEl.value);
+      if (c) {
+        $(prefix + '-lat').value = c.lat;
+        $(prefix + '-lon').value = c.lon;
+        $(prefix + '-tz').value = c.tz;
+      }
+    });
+  }
+
+  // Gather raw form values for a prefix.
+  function gatherForm(prefix, mode) {
+    return {
+      date: $(prefix + '-date') ? $(prefix + '-date').value : '',
+      time: $(prefix + '-time') ? $(prefix + '-time').value : '',
+      place: $(prefix + '-city') ? $(prefix + '-city').value : '',
+      lat: $(prefix + '-lat') ? $(prefix + '-lat').value : '',
+      lon: $(prefix + '-lon') ? $(prefix + '-lon').value : '',
+      tz: $(prefix + '-tz') ? $(prefix + '-tz').value : '',
+      category: $(prefix + '-category') ? $(prefix + '-category').value : '',
+      horary: $(prefix + '-horary') ? $(prefix + '-horary').value : '',
+      mode: mode
+    };
+  }
+
+  // Attach the analyze handler for a form prefix.
+  function wireAnalyze(prefix, mode) {
+    const btn = $(prefix + '-analyze');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      const errEl = $(prefix + '-error');
+      hideMsg(errEl);
+      try {
+        const raw = gatherForm(prefix, mode);
+        const v = ui.validateInput(raw);
+        if (!v.ok) {
+          showMsg(errEl, v.message, 'error');
+          return;
+        }
+        const out = ui.runAnalysis(v.value);
+        const html = ui.buildResultsHtml(v.value, out.chart, out.result);
+        const results = $('results');
+        if (results) {
+          results.innerHTML = html;
+          results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (e) {
+        showMsg(errEl, 'Could not cast the chart: ' + (e && e.message ? e.message : String(e)) +
+          '. Please check your inputs and try again.', 'error');
+      }
+    });
+  }
+
+  // Prefill date/time with the current device moment for a prefix.
+  function prefillNow(prefix) {
+    const now = new Date();
+    const pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    const dEl = $(prefix + '-date');
+    const tEl = $(prefix + '-time');
+    if (dEl) dEl.value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+    if (tEl) tEl.value = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  }
+
+  // Request geolocation for the Instant tab; fall back to manual entry.
+  function requestInstantLocation() {
+    const geoEl = $('instant-geo');
+    const tz = -(new Date().getTimezoneOffset()) / 60;
+    if ($('instant-tz') && !$('instant-tz').value) $('instant-tz').value = tz;
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      showMsg(geoEl, 'Geolocation is not available. Please enter your latitude, longitude and timezone manually below.', 'info');
+      return;
+    }
+    showMsg(geoEl, 'Detecting your current location\u2026', 'info');
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        if ($('instant-lat')) $('instant-lat').value = pos.coords.latitude.toFixed(4);
+        if ($('instant-lon')) $('instant-lon').value = pos.coords.longitude.toFixed(4);
+        if ($('instant-tz') && !$('instant-tz').value) $('instant-tz').value = tz;
+        showMsg(geoEl, 'Location detected. Verify the values below, then analyze.', 'info');
+      },
+      function () {
+        showMsg(geoEl, 'Location access was denied or unavailable. Please enter your latitude, ' +
+          'longitude and timezone manually below.', 'info');
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+    );
+  }
+
+  let instantPrimed = false;
+  function primeInstant() {
+    prefillNow('instant');
+    requestInstantLocation();
+    instantPrimed = true;
+  }
+
+  // Build both forms and the tab switching behaviour.
+  ui.init = function init() {
+    const area = $('form-area');
+    if (area) {
+      area.innerHTML =
+        '<div id="manual-pane">' + buildFormHtml('manual', 'manual') + '</div>' +
+        '<div id="instant-pane" class="hidden">' + buildFormHtml('instant', 'instant') + '</div>';
+    }
+
+    // City autofill + analyze handlers for both forms.
+    wireCityAutofill('manual');
+    wireCityAutofill('instant');
+    wireAnalyze('manual', 'manual');
+    wireAnalyze('instant', 'instant');
+
+    // Default the manual date/time to "now" for convenience (editable).
+    prefillNow('manual');
+
+    // Tab switching.
+    const tabManual = $('tab-manual');
+    const tabInstant = $('tab-instant');
+    const paneManual = $('manual-pane');
+    const paneInstant = $('instant-pane');
+
+    function activate(which) {
+      const manualOn = (which === 'manual');
+      if (tabManual) {
+        tabManual.classList.toggle('active', manualOn);
+        tabManual.setAttribute('aria-selected', manualOn ? 'true' : 'false');
+      }
+      if (tabInstant) {
+        tabInstant.classList.toggle('active', !manualOn);
+        tabInstant.setAttribute('aria-selected', !manualOn ? 'true' : 'false');
+      }
+      if (paneManual) paneManual.classList.toggle('hidden', !manualOn);
+      if (paneInstant) paneInstant.classList.toggle('hidden', manualOn);
+      if (!manualOn && !instantPrimed) primeInstant();
+    }
+
+    if (tabManual) tabManual.addEventListener('click', function () { activate('manual'); });
+    if (tabInstant) tabInstant.addEventListener('click', function () { activate('instant'); });
+
+    activate('manual');
+  };
+
+  if (typeof document !== "undefined" && document.addEventListener) {
+    document.addEventListener("DOMContentLoaded", function () {
+      KPApp.ui.init();
+    });
+  }
+
+  global.KPApp = KPApp;
+  // Also expose ATTRIBUTION as a top-level constant reference for convenience.
+  global.ATTRIBUTION = ATTRIBUTION;
+
+})(typeof window !== "undefined" ? window : this);
+</script>
+</body>
+</html>
