@@ -191,6 +191,49 @@
     font-style: italic;
   }
 
+  /* ---------- City autocomplete dropdown ---------- */
+  .city-combo {
+    position: relative;
+  }
+
+  .city-suggestions {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    z-index: 30;
+  }
+
+  .city-suggestions li {
+    padding: 8px 11px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .city-suggestions li.active,
+  .city-suggestions li:hover {
+    background: var(--accent-soft);
+    color: #fff7ee;
+  }
+
+  .city-note {
+    margin-top: 5px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
   .loc-block {
     border: 1px dashed var(--border);
     border-radius: 10px;
@@ -1878,7 +1921,208 @@
     { name: 'Paris',         lat: 48.8566,  lon: 2.3522,   tz: 1 },
     { name: 'Berlin',        lat: 52.5200,  lon: 13.4050,  tz: 1 },
     { name: 'Moscow',        lat: 55.7558,  lon: 37.6173,  tz: 3 },
-    { name: 'Johannesburg',  lat: -26.2041, lon: 28.0473,  tz: 2 }
+    { name: 'Johannesburg',  lat: -26.2041, lon: 28.0473,  tz: 2 },
+    // --- Additional Indian cities -------------------------------------
+    { name: 'Thane',            lat: 19.2183,  lon: 72.9781,  tz: 5.5 },
+    { name: 'Navi Mumbai',      lat: 19.0330,  lon: 73.0297,  tz: 5.5 },
+    { name: 'Pimpri-Chinchwad', lat: 18.6279,  lon: 73.8009,  tz: 5.5 },
+    { name: 'Nashik',           lat: 19.9975,  lon: 73.7898,  tz: 5.5 },
+    { name: 'Aurangabad',       lat: 19.8762,  lon: 75.3433,  tz: 5.5 },
+    { name: 'Solapur',          lat: 17.6599,  lon: 75.9064,  tz: 5.5 },
+    { name: 'Kolhapur',         lat: 16.7050,  lon: 74.2433,  tz: 5.5 },
+    { name: 'Amravati',         lat: 20.9374,  lon: 77.7796,  tz: 5.5 },
+    { name: 'Vadodara',         lat: 22.3072,  lon: 73.1812,  tz: 5.5 },
+    { name: 'Rajkot',           lat: 22.3039,  lon: 70.8022,  tz: 5.5 },
+    { name: 'Bhavnagar',        lat: 21.7645,  lon: 72.1519,  tz: 5.5 },
+    { name: 'Jamnagar',         lat: 22.4707,  lon: 70.0577,  tz: 5.5 },
+    { name: 'Gandhinagar',      lat: 23.2156,  lon: 72.6369,  tz: 5.5 },
+    { name: 'Junagadh',         lat: 21.5222,  lon: 70.4579,  tz: 5.5 },
+    { name: 'Coimbatore',       lat: 11.0168,  lon: 76.9558,  tz: 5.5 },
+    { name: 'Madurai',          lat: 9.9252,   lon: 78.1198,  tz: 5.5 },
+    { name: 'Tiruchirappalli',  lat: 10.7905,  lon: 78.7047,  tz: 5.5 },
+    { name: 'Salem',            lat: 11.6643,  lon: 78.1460,  tz: 5.5 },
+    { name: 'Tirupur',          lat: 11.1085,  lon: 77.3411,  tz: 5.5 },
+    { name: 'Erode',            lat: 11.3410,  lon: 77.7172,  tz: 5.5 },
+    { name: 'Vellore',          lat: 12.9165,  lon: 79.1325,  tz: 5.5 },
+    { name: 'Visakhapatnam',    lat: 17.6868,  lon: 83.2185,  tz: 5.5 },
+    { name: 'Vijayawada',       lat: 16.5062,  lon: 80.6480,  tz: 5.5 },
+    { name: 'Guntur',           lat: 16.3067,  lon: 80.4365,  tz: 5.5 },
+    { name: 'Nellore',          lat: 14.4426,  lon: 79.9865,  tz: 5.5 },
+    { name: 'Tirupati',         lat: 13.6288,  lon: 79.4192,  tz: 5.5 },
+    { name: 'Warangal',         lat: 17.9689,  lon: 79.5941,  tz: 5.5 },
+    { name: 'Mysuru',           lat: 12.2958,  lon: 76.6394,  tz: 5.5 },
+    { name: 'Mangaluru',        lat: 12.9141,  lon: 74.8560,  tz: 5.5 },
+    { name: 'Hubli',            lat: 15.3647,  lon: 75.1240,  tz: 5.5 },
+    { name: 'Belagavi',         lat: 15.8497,  lon: 74.4977,  tz: 5.5 },
+    { name: 'Thiruvananthapuram',lat: 8.5241,  lon: 76.9366,  tz: 5.5 },
+    { name: 'Kozhikode',        lat: 11.2588,  lon: 75.7804,  tz: 5.5 },
+    { name: 'Kollam',           lat: 8.8932,   lon: 76.6141,  tz: 5.5 },
+    { name: 'Thrissur',         lat: 10.5276,  lon: 76.2144,  tz: 5.5 },
+    { name: 'Kannur',           lat: 11.8745,  lon: 75.3704,  tz: 5.5 },
+    { name: 'Guwahati',         lat: 26.1445,  lon: 91.7362,  tz: 5.5 },
+    { name: 'Dispur',           lat: 26.1433,  lon: 91.7898,  tz: 5.5 },
+    { name: 'Siliguri',         lat: 26.7271,  lon: 88.3953,  tz: 5.5 },
+    { name: 'Bhubaneswar',      lat: 20.2961,  lon: 85.8245,  tz: 5.5 },
+    { name: 'Cuttack',          lat: 20.4625,  lon: 85.8830,  tz: 5.5 },
+    { name: 'Ranchi',           lat: 23.3441,  lon: 85.3096,  tz: 5.5 },
+    { name: 'Jamshedpur',       lat: 22.8046,  lon: 86.2029,  tz: 5.5 },
+    { name: 'Dhanbad',          lat: 23.7957,  lon: 86.4304,  tz: 5.5 },
+    { name: 'Bokaro',           lat: 23.6693,  lon: 86.1511,  tz: 5.5 },
+    { name: 'Raipur',           lat: 21.2514,  lon: 81.6296,  tz: 5.5 },
+    { name: 'Bhilai',           lat: 21.2090,  lon: 81.4285,  tz: 5.5 },
+    { name: 'Bilaspur',         lat: 22.0797,  lon: 82.1409,  tz: 5.5 },
+    { name: 'Dehradun',         lat: 30.3165,  lon: 78.0322,  tz: 5.5 },
+    { name: 'Jodhpur',          lat: 26.2389,  lon: 73.0243,  tz: 5.5 },
+    { name: 'Udaipur',          lat: 24.5854,  lon: 73.7125,  tz: 5.5 },
+    { name: 'Kota',             lat: 25.2138,  lon: 75.8648,  tz: 5.5 },
+    { name: 'Ajmer',            lat: 26.4499,  lon: 74.6399,  tz: 5.5 },
+    { name: 'Bikaner',          lat: 28.0229,  lon: 73.3119,  tz: 5.5 },
+    { name: 'Agra',             lat: 27.1767,  lon: 78.0081,  tz: 5.5 },
+    { name: 'Meerut',           lat: 28.9845,  lon: 77.7064,  tz: 5.5 },
+    { name: 'Aligarh',          lat: 27.8974,  lon: 78.0880,  tz: 5.5 },
+    { name: 'Bareilly',         lat: 28.3670,  lon: 79.4304,  tz: 5.5 },
+    { name: 'Moradabad',        lat: 28.8386,  lon: 78.7733,  tz: 5.5 },
+    { name: 'Ghaziabad',        lat: 28.6692,  lon: 77.4538,  tz: 5.5 },
+    { name: 'Noida',            lat: 28.5355,  lon: 77.3910,  tz: 5.5 },
+    { name: 'Gurugram',         lat: 28.4595,  lon: 77.0266,  tz: 5.5 },
+    { name: 'Faridabad',        lat: 28.4089,  lon: 77.3178,  tz: 5.5 },
+    { name: 'Gorakhpur',        lat: 26.7606,  lon: 83.3732,  tz: 5.5 },
+    { name: 'Firozabad',        lat: 27.1591,  lon: 78.3958,  tz: 5.5 },
+    { name: 'Saharanpur',       lat: 29.9680,  lon: 77.5552,  tz: 5.5 },
+    { name: 'Prayagraj',        lat: 25.4358,  lon: 81.8463,  tz: 5.5 },
+    { name: 'Allahabad',        lat: 25.4358,  lon: 81.8463,  tz: 5.5 },
+    { name: 'Ludhiana',         lat: 30.9010,  lon: 75.8573,  tz: 5.5 },
+    { name: 'Amritsar',         lat: 31.6340,  lon: 74.8723,  tz: 5.5 },
+    { name: 'Jalandhar',        lat: 31.3260,  lon: 75.5762,  tz: 5.5 },
+    { name: 'Patiala',          lat: 30.3398,  lon: 76.3869,  tz: 5.5 },
+    { name: 'Bathinda',         lat: 30.2110,  lon: 74.9455,  tz: 5.5 },
+    { name: 'Panipat',          lat: 29.3909,  lon: 76.9635,  tz: 5.5 },
+    { name: 'Rohtak',           lat: 28.8955,  lon: 76.6066,  tz: 5.5 },
+    { name: 'Hisar',            lat: 29.1492,  lon: 75.7217,  tz: 5.5 },
+    { name: 'Karnal',           lat: 29.6857,  lon: 76.9905,  tz: 5.5 },
+    { name: 'Gwalior',          lat: 26.2183,  lon: 78.1828,  tz: 5.5 },
+    { name: 'Jabalpur',         lat: 23.1815,  lon: 79.9864,  tz: 5.5 },
+    { name: 'Ujjain',           lat: 23.1765,  lon: 75.7885,  tz: 5.5 },
+    { name: 'Srinagar',         lat: 34.0837,  lon: 74.7973,  tz: 5.5 },
+    { name: 'Jammu',            lat: 32.7266,  lon: 74.8570,  tz: 5.5 },
+    { name: 'Shimla',           lat: 31.1048,  lon: 77.1734,  tz: 5.5 },
+    { name: 'Howrah',           lat: 22.5958,  lon: 88.2636,  tz: 5.5 },
+    { name: 'Asansol',          lat: 23.6739,  lon: 86.9524,  tz: 5.5 },
+    { name: 'Durgapur',         lat: 23.5204,  lon: 87.3119,  tz: 5.5 },
+    { name: 'Imphal',           lat: 24.8170,  lon: 93.9368,  tz: 5.5 },
+    { name: 'Shillong',         lat: 25.5788,  lon: 91.8933,  tz: 5.5 },
+    { name: 'Aizawl',           lat: 23.7271,  lon: 92.7176,  tz: 5.5 },
+    { name: 'Kohima',           lat: 25.6701,  lon: 94.1077,  tz: 5.5 },
+    { name: 'Itanagar',         lat: 27.0844,  lon: 93.6053,  tz: 5.5 },
+    { name: 'Agartala',         lat: 23.8315,  lon: 91.2868,  tz: 5.5 },
+    { name: 'Gangtok',          lat: 27.3389,  lon: 88.6065,  tz: 5.5 },
+    { name: 'Puducherry',       lat: 11.9416,  lon: 79.8083,  tz: 5.5 },
+    { name: 'Panaji',           lat: 15.4909,  lon: 73.8278,  tz: 5.5 },
+    // --- Additional South Asian cities --------------------------------
+    { name: 'Lahore',           lat: 31.5204,  lon: 74.3587,  tz: 5 },
+    { name: 'Islamabad',        lat: 33.6844,  lon: 73.0479,  tz: 5 },
+    { name: 'Kabul',            lat: 34.5553,  lon: 69.2075,  tz: 4.5 },
+    // --- Additional world cities --------------------------------------
+    { name: 'Washington',       lat: 38.9072,  lon: -77.0369, tz: -5 },
+    { name: 'Boston',           lat: 42.3601,  lon: -71.0589, tz: -5 },
+    { name: 'Philadelphia',     lat: 39.9526,  lon: -75.1652, tz: -5 },
+    { name: 'Atlanta',          lat: 33.7490,  lon: -84.3880, tz: -5 },
+    { name: 'Miami',            lat: 25.7617,  lon: -80.1918, tz: -5 },
+    { name: 'Detroit',          lat: 42.3314,  lon: -83.0458, tz: -5 },
+    { name: 'Houston',          lat: 29.7604,  lon: -95.3698, tz: -6 },
+    { name: 'Dallas',           lat: 32.7767,  lon: -96.7970, tz: -6 },
+    { name: 'Minneapolis',      lat: 44.9778,  lon: -93.2650, tz: -6 },
+    { name: 'Denver',           lat: 39.7392,  lon: -104.9903,tz: -7 },
+    { name: 'Phoenix',          lat: 33.4484,  lon: -112.0740,tz: -7 },
+    { name: 'Seattle',          lat: 47.6062,  lon: -122.3321,tz: -8 },
+    { name: 'San Diego',        lat: 32.7157,  lon: -117.1611,tz: -8 },
+    { name: 'Las Vegas',        lat: 36.1699,  lon: -115.1398,tz: -8 },
+    { name: 'Vancouver',        lat: 49.2827,  lon: -123.1207,tz: -8 },
+    { name: 'Calgary',          lat: 51.0447,  lon: -114.0719,tz: -7 },
+    { name: 'Montreal',         lat: 45.5017,  lon: -73.5673, tz: -5 },
+    { name: 'Ottawa',           lat: 45.4215,  lon: -75.6972, tz: -5 },
+    { name: 'Mexico City',      lat: 19.4326,  lon: -99.1332, tz: -6 },
+    { name: 'Sao Paulo',        lat: -23.5505, lon: -46.6333, tz: -3 },
+    { name: 'Rio de Janeiro',   lat: -22.9068, lon: -43.1729, tz: -3 },
+    { name: 'Buenos Aires',     lat: -34.6037, lon: -58.3816, tz: -3 },
+    { name: 'Lima',             lat: -12.0464, lon: -77.0428, tz: -5 },
+    { name: 'Bogota',           lat: 4.7110,   lon: -74.0721, tz: -5 },
+    { name: 'Santiago',         lat: -33.4489, lon: -70.6693, tz: -4 },
+    { name: 'Madrid',           lat: 40.4168,  lon: -3.7038,  tz: 1 },
+    { name: 'Barcelona',        lat: 41.3851,  lon: 2.1734,   tz: 1 },
+    { name: 'Rome',             lat: 41.9028,  lon: 12.4964,  tz: 1 },
+    { name: 'Milan',            lat: 45.4642,  lon: 9.1900,   tz: 1 },
+    { name: 'Amsterdam',        lat: 52.3676,  lon: 4.9041,   tz: 1 },
+    { name: 'Brussels',         lat: 50.8503,  lon: 4.3517,   tz: 1 },
+    { name: 'Zurich',           lat: 47.3769,  lon: 8.5417,   tz: 1 },
+    { name: 'Geneva',           lat: 46.2044,  lon: 6.1432,   tz: 1 },
+    { name: 'Vienna',           lat: 48.2082,  lon: 16.3738,  tz: 1 },
+    { name: 'Munich',           lat: 48.1351,  lon: 11.5820,  tz: 1 },
+    { name: 'Frankfurt',        lat: 50.1109,  lon: 8.6821,   tz: 1 },
+    { name: 'Hamburg',          lat: 53.5511,  lon: 9.9937,   tz: 1 },
+    { name: 'Cologne',          lat: 50.9375,  lon: 6.9603,   tz: 1 },
+    { name: 'Warsaw',           lat: 52.2297,  lon: 21.0122,  tz: 1 },
+    { name: 'Prague',           lat: 50.0755,  lon: 14.4378,  tz: 1 },
+    { name: 'Budapest',         lat: 47.4979,  lon: 19.0402,  tz: 1 },
+    { name: 'Stockholm',        lat: 59.3293,  lon: 18.0686,  tz: 1 },
+    { name: 'Oslo',             lat: 59.9139,  lon: 10.7522,  tz: 1 },
+    { name: 'Copenhagen',       lat: 55.6761,  lon: 12.5683,  tz: 1 },
+    { name: 'Dublin',           lat: 53.3498,  lon: -6.2603,  tz: 0 },
+    { name: 'Lisbon',           lat: 38.7223,  lon: -9.1393,  tz: 0 },
+    { name: 'Athens',           lat: 37.9838,  lon: 23.7275,  tz: 2 },
+    { name: 'Helsinki',         lat: 60.1699,  lon: 24.9384,  tz: 2 },
+    { name: 'Bucharest',        lat: 44.4268,  lon: 26.1025,  tz: 2 },
+    { name: 'Kyiv',             lat: 50.4501,  lon: 30.5234,  tz: 2 },
+    { name: 'Istanbul',         lat: 41.0082,  lon: 28.9784,  tz: 3 },
+    { name: 'Cairo',            lat: 30.0444,  lon: 31.2357,  tz: 2 },
+    { name: 'Nairobi',          lat: -1.2921,  lon: 36.8219,  tz: 3 },
+    { name: 'Lagos',            lat: 6.5244,   lon: 3.3792,   tz: 1 },
+    { name: 'Accra',            lat: 5.6037,   lon: -0.1870,  tz: 0 },
+    { name: 'Casablanca',       lat: 33.5731,  lon: -7.5898,  tz: 0 },
+    { name: 'Addis Ababa',      lat: 9.0320,   lon: 38.7469,  tz: 3 },
+    { name: 'Cape Town',        lat: -33.9249, lon: 18.4241,  tz: 2 },
+    { name: 'Durban',           lat: -29.8587, lon: 31.0218,  tz: 2 },
+    { name: 'Riyadh',           lat: 24.7136,  lon: 46.6753,  tz: 3 },
+    { name: 'Kuwait City',      lat: 29.3759,  lon: 47.9774,  tz: 3 },
+    { name: 'Baghdad',          lat: 33.3152,  lon: 44.3661,  tz: 3 },
+    { name: 'Manama',           lat: 26.2285,  lon: 50.5860,  tz: 3 },
+    { name: 'Doha',             lat: 25.2854,  lon: 51.5310,  tz: 3 },
+    { name: 'Abu Dhabi',        lat: 24.4539,  lon: 54.3773,  tz: 4 },
+    { name: 'Muscat',           lat: 23.5880,  lon: 58.3829,  tz: 4 },
+    { name: 'Tehran',           lat: 35.6892,  lon: 51.3890,  tz: 3.5 },
+    { name: 'Tel Aviv',         lat: 32.0853,  lon: 34.7818,  tz: 2 },
+    { name: 'Jerusalem',        lat: 31.7683,  lon: 35.2137,  tz: 2 },
+    { name: 'Amman',            lat: 31.9454,  lon: 35.9284,  tz: 2 },
+    { name: 'Beirut',           lat: 33.8938,  lon: 35.5018,  tz: 2 },
+    { name: 'Tashkent',         lat: 41.2995,  lon: 69.2401,  tz: 5 },
+    { name: 'Almaty',           lat: 43.2220,  lon: 76.8512,  tz: 5 },
+    { name: 'Bangkok',          lat: 13.7563,  lon: 100.5018, tz: 7 },
+    { name: 'Hanoi',            lat: 21.0278,  lon: 105.8342, tz: 7 },
+    { name: 'Ho Chi Minh City', lat: 10.8231,  lon: 106.6297, tz: 7 },
+    { name: 'Phnom Penh',       lat: 11.5564,  lon: 104.9282, tz: 7 },
+    { name: 'Jakarta',          lat: -6.2088,  lon: 106.8456, tz: 7 },
+    { name: 'Yangon',           lat: 16.8409,  lon: 96.1735,  tz: 6.5 },
+    { name: 'Kuala Lumpur',     lat: 3.1390,   lon: 101.6869, tz: 8 },
+    { name: 'Manila',           lat: 14.5995,  lon: 120.9842, tz: 8 },
+    { name: 'Beijing',          lat: 39.9042,  lon: 116.4074, tz: 8 },
+    { name: 'Shanghai',         lat: 31.2304,  lon: 121.4737, tz: 8 },
+    { name: 'Guangzhou',        lat: 23.1291,  lon: 113.2644, tz: 8 },
+    { name: 'Shenzhen',         lat: 22.5431,  lon: 114.0579, tz: 8 },
+    { name: 'Chengdu',          lat: 30.5728,  lon: 104.0668, tz: 8 },
+    { name: 'Wuhan',            lat: 30.5928,  lon: 114.3055, tz: 8 },
+    { name: 'Taipei',           lat: 25.0330,  lon: 121.5654, tz: 8 },
+    { name: 'Seoul',            lat: 37.5665,  lon: 126.9780, tz: 9 },
+    { name: 'Busan',            lat: 35.1796,  lon: 129.0756, tz: 9 },
+    { name: 'Osaka',            lat: 34.6937,  lon: 135.5023, tz: 9 },
+    { name: 'Nagoya',           lat: 35.1815,  lon: 136.9066, tz: 9 },
+    { name: 'Sapporo',          lat: 43.0618,  lon: 141.3545, tz: 9 },
+    { name: 'Melbourne',        lat: -37.8136, lon: 144.9631, tz: 10 },
+    { name: 'Brisbane',         lat: -27.4698, lon: 153.0251, tz: 10 },
+    { name: 'Adelaide',         lat: -34.9285, lon: 138.6007, tz: 9.5 },
+    { name: 'Perth',            lat: -31.9505, lon: 115.8605, tz: 8 },
+    { name: 'Wellington',       lat: -41.2865, lon: 174.7762, tz: 12 },
+    { name: 'Christchurch',     lat: -43.5321, lon: 172.6362, tz: 12 },
+    { name: 'Suva',             lat: -18.1248, lon: 178.4501, tz: 12 }
   ];
 
   // Quick lookup by case-insensitive city name.
@@ -1889,6 +2133,32 @@
       if (ui.CITIES[i].name.toLowerCase() === key) return ui.CITIES[i];
     }
     return null;
+  };
+
+  // DOM-free substring search over ui.CITIES.
+  // Returns the cities whose name contains `query` (case-insensitive,
+  // trimmed) as a substring. Prefix matches are ranked before mid-string
+  // matches, then alphabetically within each group. The result is capped to
+  // `limit` (default 12) for display; ranking and capping affect order and
+  // visibility only, never which cities qualify as matches.
+  ui.searchCities = function searchCities(query, limit) {
+    if (query == null) return [];
+    const q = String(query).trim().toLowerCase();
+    if (!q) return [];
+    const cap = (typeof limit === 'number' && limit > 0) ? limit : 12;
+    const prefix = [];
+    const mid = [];
+    for (let i = 0; i < ui.CITIES.length; i++) {
+      const c = ui.CITIES[i];
+      const lower = c.name.toLowerCase();
+      const idx = lower.indexOf(q);
+      if (idx === 0) prefix.push(c);
+      else if (idx > 0) mid.push(c);
+    }
+    const byName = function (a, b) { return a.name.localeCompare(b.name); };
+    prefix.sort(byName);
+    mid.sort(byName);
+    return prefix.concat(mid).slice(0, cap);
   };
 
   // --- Query categories (label -> interpret category key) ---------------
@@ -2189,6 +2459,9 @@
   }
 
   function cityDatalistHtml(id) {
+    // Retained for backward compatibility; the custom autocomplete dropdown
+    // (see wireCityAutocomplete) is the source of truth for suggestions and
+    // coordinate fill. This native datalist is no longer wired into the form.
     return '<datalist id="' + id + '">' +
       ui.CITIES.map(function (c) { return '<option value="' + esc(c.name) + '"></option>'; }).join('') +
       '</datalist>';
@@ -2219,9 +2492,14 @@
           '</div>' +
           '<div class="field full">' +
             '<label for="' + prefix + '-city">Place / City</label>' +
-            '<input type="text" id="' + prefix + '-city" list="' + prefix + '-cities" ' +
-              'placeholder="e.g. Mumbai" autocomplete="off" />' +
-            cityDatalistHtml(prefix + '-cities') +
+            '<div class="city-combo" id="' + prefix + '-city-combo">' +
+              '<input type="text" id="' + prefix + '-city" ' +
+                'role="combobox" aria-autocomplete="list" aria-expanded="false" ' +
+                'aria-controls="' + prefix + '-city-list" ' +
+                'placeholder="e.g. Mumbai" autocomplete="off" />' +
+              '<ul id="' + prefix + '-city-list" role="listbox" class="city-suggestions hidden"></ul>' +
+              '<div id="' + prefix + '-city-note" class="city-note hidden"></div>' +
+            '</div>' +
             '<span class="hint">' + cityHint + '</span>' +
           '</div>' +
           '<fieldset class="loc-block" id="' + prefix + '-loc">' +
@@ -2273,16 +2551,142 @@
     el.className = 'form-msg ' + (el.classList.contains('info') ? 'info' : 'error');
   }
 
-  // Wire city autofill for a form prefix.
-  function wireCityAutofill(prefix) {
+  // Deterministically fill lat/lon/tz for a chosen city, independent of the
+  // browser's native `change` event. Sets the input value to the city name
+  // and closes the suggestion dropdown.
+  function selectCity(prefix, city) {
+    if (!city) return;
     const cityEl = $(prefix + '-city');
-    if (!cityEl) return;
-    cityEl.addEventListener('change', function () {
-      const c = ui.findCity(cityEl.value);
-      if (c) {
-        $(prefix + '-lat').value = c.lat;
-        $(prefix + '-lon').value = c.lon;
-        $(prefix + '-tz').value = c.tz;
+    const latEl = $(prefix + '-lat');
+    const lonEl = $(prefix + '-lon');
+    const tzEl = $(prefix + '-tz');
+    if (latEl) latEl.value = city.lat;
+    if (lonEl) lonEl.value = city.lon;
+    if (tzEl) tzEl.value = city.tz;
+    if (cityEl) cityEl.value = city.name;
+    closeCityList(prefix);
+  }
+
+  // Hide the suggestion list and reset combobox state for a prefix.
+  function closeCityList(prefix) {
+    const listEl = $(prefix + '-city-list');
+    const cityEl = $(prefix + '-city');
+    if (listEl) {
+      listEl.classList.add('hidden');
+      listEl.innerHTML = '';
+    }
+    if (cityEl) {
+      cityEl.setAttribute('aria-expanded', 'false');
+      cityEl.removeAttribute('aria-activedescendant');
+    }
+  }
+
+  // Wire the custom, accessible, offline city autocomplete for a form prefix.
+  // Replaces the previous wireCityAutofill (native datalist + change event).
+  function wireCityAutocomplete(prefix) {
+    const cityEl = $(prefix + '-city');
+    const listEl = $(prefix + '-city-list');
+    const noteEl = $(prefix + '-city-note');
+    if (!cityEl || !listEl) return;
+
+    let matches = [];
+    let activeIndex = -1;
+
+    function setActive(idx) {
+      const opts = listEl.children;
+      for (let i = 0; i < opts.length; i++) opts[i].classList.remove('active');
+      activeIndex = idx;
+      if (idx >= 0 && idx < opts.length) {
+        const opt = opts[idx];
+        opt.classList.add('active');
+        cityEl.setAttribute('aria-activedescendant', opt.id);
+        if (opt.scrollIntoView) opt.scrollIntoView({ block: 'nearest' });
+      } else {
+        cityEl.removeAttribute('aria-activedescendant');
+      }
+    }
+
+    function hideNote() {
+      if (noteEl) { noteEl.classList.add('hidden'); noteEl.textContent = ''; }
+    }
+    function showNote() {
+      if (noteEl) {
+        noteEl.textContent = 'No matching city \u2014 enter coordinates manually';
+        noteEl.classList.remove('hidden');
+      }
+    }
+
+    function render() {
+      listEl.innerHTML = '';
+      for (let i = 0; i < matches.length; i++) {
+        const c = matches[i];
+        const li = document.createElement('li');
+        li.id = prefix + '-city-opt-' + i;
+        li.setAttribute('role', 'option');
+        li.textContent = c.name;
+        li.dataset.index = String(i);
+        // Use mousedown to fill before the input loses focus (avoids blur race).
+        li.addEventListener('mousedown', function (ev) {
+          ev.preventDefault();
+          const idx = Number(this.dataset.index);
+          selectCity(prefix, matches[idx]);
+        });
+        li.addEventListener('click', function () {
+          const idx = Number(this.dataset.index);
+          selectCity(prefix, matches[idx]);
+        });
+        li.addEventListener('touchend', function (ev) {
+          ev.preventDefault();
+          const idx = Number(this.dataset.index);
+          selectCity(prefix, matches[idx]);
+        });
+        listEl.appendChild(li);
+      }
+      listEl.classList.remove('hidden');
+      cityEl.setAttribute('aria-expanded', 'true');
+      setActive(-1);
+    }
+
+    cityEl.addEventListener('input', function () {
+      const raw = cityEl.value;
+      matches = ui.searchCities(raw);
+      if (matches.length > 0) {
+        hideNote();
+        render();
+      } else if (raw.trim() !== '') {
+        closeCityList(prefix);
+        showNote();
+      } else {
+        closeCityList(prefix);
+        hideNote();
+      }
+    });
+
+    cityEl.addEventListener('keydown', function (ev) {
+      const open = !listEl.classList.contains('hidden') && matches.length > 0;
+      if (ev.key === 'ArrowDown') {
+        if (!open) return;
+        ev.preventDefault();
+        setActive(activeIndex + 1 >= matches.length ? 0 : activeIndex + 1);
+      } else if (ev.key === 'ArrowUp') {
+        if (!open) return;
+        ev.preventDefault();
+        setActive(activeIndex - 1 < 0 ? matches.length - 1 : activeIndex - 1);
+      } else if (ev.key === 'Enter') {
+        if (open && activeIndex >= 0 && activeIndex < matches.length) {
+          ev.preventDefault();
+          selectCity(prefix, matches[activeIndex]);
+        }
+      } else if (ev.key === 'Escape') {
+        closeCityList(prefix);
+      }
+    });
+
+    // Close the dropdown when clicking outside the combobox.
+    document.addEventListener('click', function (ev) {
+      const combo = $(prefix + '-city-combo');
+      if (combo && !combo.contains(ev.target)) {
+        closeCityList(prefix);
       }
     });
   }
@@ -2382,9 +2786,9 @@
         '<div id="instant-pane" class="hidden">' + buildFormHtml('instant', 'instant') + '</div>';
     }
 
-    // City autofill + analyze handlers for both forms.
-    wireCityAutofill('manual');
-    wireCityAutofill('instant');
+    // City autocomplete + analyze handlers for both forms.
+    wireCityAutocomplete('manual');
+    wireCityAutocomplete('instant');
     wireAnalyze('manual', 'manual');
     wireAnalyze('instant', 'instant');
 
