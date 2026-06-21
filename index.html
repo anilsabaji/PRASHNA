@@ -234,6 +234,119 @@
     font-style: italic;
   }
 
+  /* ---------- Question picker ---------- */
+  .question-combo { position: relative; }
+
+  .question-suggestions {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 4px;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 280px;
+    overflow-y: auto;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    z-index: 30;
+  }
+
+  .question-suggestions li.q-option {
+    padding: 8px 11px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.93rem;
+    color: var(--ink);
+  }
+
+  .question-suggestions li.q-option.active,
+  .question-suggestions li.q-option:hover {
+    background: var(--accent-soft);
+    color: #fff7ee;
+  }
+
+  .question-suggestions li.q-group-heading {
+    padding: 7px 10px 3px;
+    font-size: 0.74rem;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: default;
+  }
+
+  .question-meta {
+    margin-top: 6px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  /* ---------- Custom-question disclosure ---------- */
+  .custom-q { margin-top: 4px; }
+  .custom-q > summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    padding: 6px 0;
+  }
+  .custom-q-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0 4px;
+  }
+  .custom-q-body input[type="text"] {
+    font-family: inherit;
+    font-size: 0.98rem;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #fffdf9;
+    color: var(--ink);
+    width: 100%;
+  }
+  .custom-houses-label {
+    font-size: 0.78rem;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .custom-houses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .custom-houses .house-chk {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.88rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 9px;
+    cursor: pointer;
+    background: #fffdf9;
+  }
+
+  .btn-secondary {
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    padding: 9px 16px;
+    align-self: flex-start;
+    border: 1px solid var(--accent);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: var(--accent-soft); color: #fff7ee; }
+
   .loc-block {
     border: 1px dashed var(--border);
     border-radius: 10px;
@@ -385,6 +498,7 @@
     astro: {},    // astronomy layer
     kp: {},       // KP astrology layer (placeholder)
     interpret: {},// interpretation layer (placeholder)
+    catalog: {},  // question catalog layer (placeholder)
     ui: {}        // UI layer (placeholder)
   };
 
@@ -1222,7 +1336,8 @@
   const CATEGORY_KARAKA = {
     health: 'Sun', marriage: 'Venus', career: 'Saturn', litigation: 'Mars',
     travel: 'Moon', children: 'Jupiter', finance: 'Jupiter', property: 'Mars',
-    education: 'Mercury', enemies: 'Mars', longevity: 'Saturn'
+    education: 'Mercury', enemies: 'Mars', longevity: 'Saturn',
+    wealthRecovery: 'Jupiter', siblings: 'Mars', fortune: 'Jupiter', gains: 'Jupiter'
   };
 
   // --- Category -> houses (covers all twelve houses) --------------------
@@ -1238,7 +1353,11 @@
     education:  [4, 5, 9],
     enemies:    [6, 8, 12],
     longevity:  [1, 3, 8],
-    missingItem:[2, 4, 6, 7, 11]
+    missingItem:[2, 4, 6, 7, 11],
+    wealthRecovery: [2, 6, 11],
+    siblings:       [3, 9, 11],
+    fortune:        [5, 9, 11],
+    gains:          [2, 6, 11]
   };
   const CATEGORY_HOUSES = interpret.CATEGORY_HOUSES;
 
@@ -1303,9 +1422,24 @@
     missingItem: {
       name: 'Missing / Lost Article', houses: [2, 4, 6, 7, 11],
       description: 'Judged from the 2nd (possession / recovery), 11th (return of the article), 4th (within the premises / its place), 7th (the finder or thief) and 6th (the loss or theft itself).'
+    },
+    wealthRecovery: {
+      name: 'Recovery of Loaned Money', houses: [2, 6, 11],
+      description: 'Judged from the 2nd (self-acquired wealth and its return), 6th (loans, debts and money recoverable from others) and 11th (gains and fulfilment); the 2nd cuspal sub-lord tied to 2-6-11 promises recovery, while a link to 8-12 warns of loss or long delay.'
+    },
+    siblings: {
+      name: 'Siblings & Communication', houses: [3, 9, 11],
+      description: 'Judged from the 3rd (co-borns, courage, short travel and communication), 9th (the elder sibling and long-distance contact) and 11th (elder siblings and fulfilment of the wish); a 3rd cuspal sub-lord tied to 3-9-11 gives a favourable outcome for the sibling or communication matter.'
+    },
+    fortune: {
+      name: 'Fortune, Father & Spirituality', houses: [5, 9, 11],
+      description: 'Judged from the 9th (bhagya / fortune, father, dharma and divine grace), 5th (poorva-punya and devotion) and 11th (fulfilment); a 9th cuspal sub-lord tied to 5-9-11 shows fortune and grace favour the matter, while 8-12 deny it.'
+    },
+    gains: {
+      name: 'Gains & Fulfilment of Desires', houses: [2, 6, 11],
+      description: 'Judged from the 11th (labha / gains, income, friends and fulfilment of desires), 2nd (accrual of wealth) and 6th (gains through effort and competition); the 11th cuspal sub-lord tied to 11-2-6 fulfils the desired gain, while 8-12 deny or delay it.'
     }
   };
-
   // --- Verdict configuration (favourable vs negating houses) ------------
   const CATEGORY_CONFIG = {
     health:     { primary: 1,  favourable: [1, 5, 11],     negating: [6, 8, 12],    yes: 'good health and recovery', no: 'continued ill-health or a prolonged ailment' },
@@ -1319,7 +1453,11 @@
     education:  { primary: 4,  favourable: [4, 9, 11],     negating: [3, 8, 12],    yes: 'educational success', no: 'interruption or failure in studies' },
     enemies:    { primary: 6,  favourable: [6, 11],        negating: [8, 12],       yes: 'victory over enemies', no: 'continued trouble from opponents' },
     longevity:  { primary: 8,  favourable: [1, 3, 8],      negating: [2, 7],        yes: 'a good span of life with no immediate danger', no: 'a maraka affliction threatening longevity' },
-    missingItem:{ primary: 2,  favourable: [2, 11],        negating: [6, 8, 12],    yes: 'the article is recovered', no: 'the article is not recovered' }
+    missingItem:{ primary: 2,  favourable: [2, 11],        negating: [6, 8, 12],    yes: 'the article is recovered', no: 'the article is not recovered' },
+    wealthRecovery: { primary: 2,  favourable: [2, 6, 11], negating: [8, 12],       yes: 'the money is recovered', no: 'the loaned money is not recovered or is much delayed' },
+    siblings:       { primary: 3,  favourable: [3, 9, 11], negating: [8, 12],       yes: 'a favourable outcome for the sibling/communication matter', no: 'difficulty or delay in the matter' },
+    fortune:        { primary: 9,  favourable: [9, 5, 11], negating: [8, 12],       yes: 'good fortune and divine grace favour the matter', no: 'fortune does not favour the matter at present' },
+    gains:          { primary: 11, favourable: [11, 2, 6], negating: [8, 12],       yes: 'the desired gain is fulfilled', no: 'the gain is denied or delayed' }
   };
 
   // --- Small text / chart helpers ---------------------------------------
@@ -1867,6 +2005,418 @@
   KPApp.interpretQuery = interpret.interpret;
 
   /* =====================================================================
+   * COMPREHENSIVE ANSWER ENGINE  (interpret.answerQuestion)
+   * ---------------------------------------------------------------------
+   * Layers a who / when / where / how / whether / why interrogative
+   * breakdown on top of the existing dual-system (KP + Hora Shastra)
+   * reasoning. Pure and DOM-free; performs no network or storage access.
+   * Reuses gatherJudgment, kpReasoning, horaShastraReasoning,
+   * judgeMissingItem, buildFromPlanet, relationFromHouse, DIRECTION and
+   * SIGN_ELEMENT. Returns an AnswerObject (see design.md).
+   * ===================================================================== */
+
+  // House whose cusp sub-lord best describes the "person" of a question.
+  const WHO_HOUSE = {
+    marriage: 7, litigation: 7, children: 5, enemies: 6,
+    siblings: 3, career: 10, gains: 11, fortune: 9, property: 4
+  };
+
+  function whoHouseFor(handler, j) {
+    return WHO_HOUSE[handler] || j.primary;
+  }
+
+  function buildWhether(j, config) {
+    const text = 'The cuspal sub-lord ' + j.subLord + ' of the ' + ordinal(j.primary) +
+      ' house ' + (j.subSig.length ? ('signifies houses ' + listText(j.subSig)) : 'shows no clear house signification') + '. ' +
+      (j.favHit.length ? ('It touches the favourable house(s) ' + listText(j.favHit) + '. ') : '') +
+      (j.negHit.length ? ('It touches the negating house(s) ' + listText(j.negHit) + '. ') : '') +
+      'Weighing these significators against the ruling planets, the verdict is ' + j.verdict +
+      ' \u2014 the chart indicates ' + (j.favourable ? config.yes : config.no) + '.';
+    return { verdict: j.verdict, favourable: j.favourable, fructifies: j.fructifies, text: text };
+  }
+
+  function buildWhy(question, chart, j) {
+    const houses = question.governingHouses.slice();
+    const rulingPlanets = { list: j.rulingList, agree: j.rulingAgree, deny: j.rulingDeny };
+    const parts = houses.map(function (h) {
+      const s = j.sigByHouse[h] || [];
+      return ordinal(h) + ' \u2192 ' + (s.length ? listText(s) : 'none');
+    });
+    const text = 'The matter is judged from the governing house(s) ' + listText(houses) +
+      '. The decisive cuspal sub-lord is ' + j.subLord + ' (signifying ' +
+      (j.subSig.length ? listText(j.subSig) : 'no clear house') + '). House significators \u2014 ' +
+      parts.join('; ') + '. The ruling planets are ' + listText(j.rulingList) +
+      (j.rulingAgree.length ? ('; of these ' + listText(j.rulingAgree) + ' reinforce the favourable houses')
+        : '; none clearly reinforce the favourable houses') +
+      (j.rulingDeny.length ? (', while ' + listText(j.rulingDeny) + ' lean toward the negating houses') : '') + '.';
+    return {
+      houses: houses, subLord: j.subLord, significators: j.sigByHouse,
+      rulingPlanets: rulingPlanets, text: text
+    };
+  }
+
+  function buildWhen(j) {
+    const agents = dedup([j.subLord].concat(
+      j.rulingAgree.length ? j.rulingAgree.slice(0, 2) : j.rulingList.slice(0, 2)));
+    const text = j.fructifies
+      ? ('The matter is timed by the dasa / bhukti of the fructifying significators and ruling planets ' +
+        listText(agents) + '; the event should mature when these conjoined periods operate.')
+      : ('Fructification is delayed; the matter is likely to mature only in a later conjoined dasa / bhukti of ' +
+        listText(agents) + ', as the ruling planets do not yet fully agree with the favourable significators.');
+    return { text: text };
+  }
+
+  function buildWho(handler, chart, j) {
+    const h = whoHouseFor(handler, j);
+    const cusp = chart.cusps[h - 1];
+    const planet = cusp.subLord;
+    const profile = buildFromPlanet(planet) + '; in relationship, ' + relationFromHouse(h);
+    const text = 'The person concerned is shown by the sub-lord of the ' + ordinal(h) + ' cusp, ' +
+      planet + ', described as ' + buildFromPlanet(planet) + '. By house, this points to ' +
+      relationFromHouse(h) + '.';
+    return { planet: planet, house: h, profile: profile, text: text };
+  }
+
+  function buildWhere(chart, j) {
+    const planet = j.subLord;
+    const p = planetByName(chart, planet);
+    const lon = p ? p.longitude : chart.cusps[j.primary - 1].longitude;
+    const sign = signOf(lon);
+    const element = SIGN_ELEMENT[sign];
+    const direction = DIRECTION[planet] || 'an uncertain bearing';
+    const signName = SIGN_NAMES[sign];
+    const text = 'The place or direction is indicated by the significator ' + planet +
+      ', standing in the ' + element + ' sign ' + signName + ', and pointing toward the ' + direction + '.';
+    return { planet: planet, sign: signName, element: element, direction: direction, text: text };
+  }
+
+  function buildHow(j) {
+    const supporting = dedup(j.favHit.map(function (h) { return ordinal(h) + ' house'; }).concat(j.rulingAgree));
+    const obstructing = dedup(j.negHit.map(function (h) { return ordinal(h) + ' house'; }).concat(j.rulingDeny));
+    const text = 'Supporting factors: ' + (supporting.length ? listText(supporting) : 'few clear supports') +
+      ' (favourable houses touched by the sub-lord and the agreeing ruling planets). Obstructing factors: ' +
+      (obstructing.length ? listText(obstructing) : 'no strong obstruction') +
+      ' (negating houses and the denying ruling planets). The outcome unfolds through the balance of these forces.';
+    return { supporting: supporting, obstructing: obstructing, text: text };
+  }
+
+  // Build the AnswerObject for the missing/lost-article branch.
+  function answerMissingItem(question, chart, wants) {
+    const mi = interpret.judgeMissingItem(chart);
+    const houses = (question.governingHouses && question.governingHouses.length)
+      ? question.governingHouses.slice() : CATEGORY_HOUSES.missingItem.slice();
+    const kpText = interpret.kpReasoning('missingItem', chart);
+    const horaText = interpret.horaShastraReasoning('missingItem', chart);
+    const recovered = (mi.status === 'misplaced') || !!(mi.thief && mi.thief.willRecover);
+
+    const whether = {
+      verdict: recovered ? 'YES' : 'DOUBTFUL',
+      favourable: !!recovered,
+      fructifies: !!recovered,
+      text: 'The article is judged to be ' + mi.status.toUpperCase() + '. ' +
+        (mi.status === 'misplaced'
+          ? 'As it is merely misplaced, recovery is likely upon a careful search of the indicated spot.'
+          : (mi.status === 'lost'
+            ? 'As it is lost, recovery depends on the 2nd / 11th significators and the ruling planets.'
+            : ('As it is stolen, recovery is ' + (mi.thief && mi.thief.willRecover ? 'indicated.' : 'doubtful.'))))
+    };
+
+    const why = {
+      houses: houses,
+      subLord: chart.cusps[1].subLord,
+      significators: { 2: chart.significators[2] || [], 11: chart.significators[11] || [] },
+      rulingPlanets: chart.rulingPlanets,
+      text: 'Judged from the 2nd (possession / recovery), 11th (return), 4th (within the premises), 7th (finder / thief) and 6th (loss). ' +
+        'The 2nd cusp sub-lord ' + chart.cusps[1].subLord + ' with the 2nd / 11th significators decides recovery.'
+    };
+
+    const answer = {
+      question: question, handler: 'missingItem', governingHouses: houses,
+      whether: whether, why: why, kp: kpText, hora: horaText,
+      missingItem: mi, attribution: ATTRIBUTION
+    };
+
+    if (wants('WHEN')) {
+      answer.when = {
+        text: mi.thief ? ('Regarding the timing, ' + mi.thief.timing + '.')
+          : (recovered
+            ? 'Recovery is shown during the period of the 2nd / 11th significators and the agreeing ruling planets.'
+            : 'A clear time for recovery is not promised; await a stronger period of the recovery significators.')
+      };
+    }
+    if (wants('WHO')) {
+      const planet = chart.cusps[6].subLord;
+      answer.who = {
+        planet: planet, house: 7,
+        profile: mi.thief ? mi.thief.profile : (buildFromPlanet(planet) + '; in relationship, ' + relationFromHouse(7)),
+        text: 'The finder or taker is shown by the 7th cusp sub-lord ' + planet + ' \u2014 ' + buildFromPlanet(planet) + '.'
+      };
+    }
+    if (wants('WHERE')) {
+      let element, signName, direction;
+      const planet = mi.sigPlanet;
+      const p = planetByName(chart, planet);
+      const sign = signOf(p ? p.longitude : chart.cusps[1].longitude);
+      element = SIGN_ELEMENT[sign];
+      signName = SIGN_NAMES[sign];
+      if (mi.status === 'lost' && mi.lostDetail) direction = mi.lostDetail.direction;
+      else if (mi.status === 'misplaced') direction = DIRECTION[planet] || 'within the premises';
+      else direction = (mi.thief ? mi.thief.origin : (DIRECTION[planet] || 'an uncertain bearing'));
+      answer.where = {
+        planet: planet, sign: signName, element: element, direction: direction,
+        text: 'The location / direction is shown by the significator ' + planet + ' in the ' + element +
+          ' sign ' + signName + ', toward the ' + direction + '.'
+      };
+    }
+    if (wants('HOW')) {
+      const supporting = dedup((chart.significators[2] || []).concat(chart.significators[11] || []));
+      const obstructing = dedup((chart.significators[6] || []).concat(chart.significators[8] || []).concat(chart.significators[12] || []));
+      answer.how = {
+        supporting: supporting, obstructing: obstructing,
+        text: 'Recovery is supported by the significators of the 2nd and 11th (' + listText(supporting.length ? supporting : ['none']) +
+          ') and obstructed by those of the 6th, 8th and 12th (' + listText(obstructing.length ? obstructing : ['none']) + ').'
+      };
+    }
+    return answer;
+  }
+
+  interpret.answerQuestion = function answerQuestion(question, chart) {
+    const catalog = KPApp.catalog;
+    const handler = catalog.resolveHandler(question); // throws a descriptive error if absent
+    const interrogs = question.interrogatives || [];
+    function wants(name) { return interrogs.indexOf(name) >= 0; }
+
+    if (handler === 'missingItem') {
+      return answerMissingItem(question, chart, wants);
+    }
+
+    const houses = question.governingHouses.slice();
+    const config = CATEGORY_CONFIG[handler];
+    const j = interpret.gatherJudgment(chart, houses, config);
+    const kpText = interpret.kpReasoning(handler, chart);
+    const horaText = interpret.horaShastraReasoning(handler, chart);
+
+    const answer = {
+      question: question,
+      handler: handler,
+      governingHouses: houses,
+      whether: buildWhether(j, config),   // always
+      why: buildWhy(question, chart, j),  // always
+      kp: kpText,
+      hora: horaText,
+      attribution: ATTRIBUTION
+    };
+
+    if (wants('WHEN')) answer.when = buildWhen(j);
+    if (wants('WHO')) answer.who = buildWho(handler, chart, j);
+    if (wants('WHERE')) answer.where = buildWhere(chart, j);
+    if (wants('HOW')) answer.how = buildHow(j);
+
+    return answer;
+  };
+
+  /* =====================================================================
+   * QUESTION CATALOG LAYER  (KPApp.catalog)
+   * ---------------------------------------------------------------------
+   * A DOM-free namespace holding the house-wise Prashna question catalog
+   * and all pure catalog operations (search, grouping, custom-question
+   * validation / merge, house -> handler defaulting). The only side effect
+   * (localStorage read / write) lives in the UI layer, which delegates the
+   * pure merge logic here. Every catalog question resolves to an
+   * interpretation handler that exists in interpret.CATEGORY_HOUSES.
+   * ===================================================================== */
+  const catalog = KPApp.catalog;
+
+  const ALL_INTERROGATIVES = ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'HOW', 'WHY'];
+  catalog.ALL_INTERROGATIVES = ALL_INTERROGATIVES;
+
+  // House (primary governing house) -> default interpretation handler, for
+  // custom questions. Every value is a key that exists in CATEGORY_HOUSES.
+  catalog.HOUSE_DEFAULT_HANDLER = {
+    1: 'health', 2: 'finance', 3: 'siblings', 4: 'property',
+    5: 'children', 6: 'enemies', 7: 'marriage', 8: 'longevity',
+    9: 'fortune', 10: 'career', 11: 'gains', 12: 'finance'
+  };
+
+  // The embedded, curated catalog: >= 3 questions per house (1..12) plus a
+  // dedicated missing / lost-article set.
+  catalog.QUESTION_CATALOG = [
+    // ---- House 1: body, health, vitality, personality, undertakings ----
+    { id: 'h1-recovery',   house: 1, text: 'Will I recover from my present illness?', governingHouses: [1, 6, 8, 12], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h1-vitality',   house: 1, text: 'Will my general health and vitality improve?', governingHouses: [1, 6, 11], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h1-undertaking',house: 1, text: 'Will my new undertaking succeed?', governingHouses: [1, 10, 11], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h1-personality', house: 1, text: 'Will I overcome my present personal difficulties?', governingHouses: [1, 6, 11], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 2: wealth, family, savings, recovery of loan, speech ----
+    { id: 'h2-wealth',     house: 2, text: 'Will my wealth and savings increase?', governingHouses: [2, 6, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h2-family',     house: 2, text: 'Will there be happiness and growth in my family?', governingHouses: [2, 4, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h2-recover-loan', house: 2, text: 'Will I recover the money I lent?', governingHouses: [2, 6, 11], handler: 'wealthRecovery', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h2-speech',     house: 2, text: 'Will my speech or communication matter be resolved favourably?', governingHouses: [2, 3, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 3: siblings, short travel, courage, communication, residence ----
+    { id: 'h3-sibling',    house: 3, text: 'Will the matter concerning my sibling turn out well?', governingHouses: [3, 9, 11], handler: 'siblings', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h3-shorttravel',house: 3, text: 'Will my short travel or journey take place as planned?', governingHouses: [3, 9, 11], handler: 'siblings', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h3-courage',    house: 3, text: 'Will I find the courage and support to pursue my plan?', governingHouses: [3, 6, 11], handler: 'siblings', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h3-residence',  house: 3, text: 'Will my nearby change of residence happen?', governingHouses: [3, 4, 11], handler: 'siblings', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+
+    // ---- House 4: mother, house/property, land, vehicles, home, schooling ----
+    { id: 'h4-property',   house: 4, text: 'Will I acquire the house or property I desire?', governingHouses: [4, 11, 12], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h4-vehicle',    house: 4, text: 'Will I purchase the vehicle I want?', governingHouses: [4, 11], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h4-mother',     house: 4, text: "Will my mother's matter or health improve?", governingHouses: [4, 6, 11], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h4-domestic',   house: 4, text: 'Will there be domestic happiness and peace at home?', governingHouses: [4, 2, 11], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h4-education',   house: 4, text: "Will my child's basic schooling go well?", governingHouses: [4, 5, 9], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 5: children, romance, speculation, examinations, intelligence ----
+    { id: 'h5-children',   house: 5, text: 'Will I be blessed with a child?', governingHouses: [2, 5, 11], handler: 'children', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h5-romance',    house: 5, text: 'Will my romantic relationship flourish?', governingHouses: [5, 7, 11], handler: 'children', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h5-speculation',house: 5, text: 'Will I gain from speculation or investment?', governingHouses: [5, 2, 11], handler: 'children', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h5-exam',       house: 5, text: 'Will I succeed in my examination?', governingHouses: [4, 5, 9], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 6: disease, debts, enemies, litigation, employment, competition ----
+    { id: 'h6-enemies',    house: 6, text: 'Will I overcome my enemies?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h6-litigation', house: 6, text: 'Will I win my legal dispute?', governingHouses: [6, 7, 8], handler: 'litigation', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h6-employment', house: 6, text: 'Will I get the job or service I am seeking?', governingHouses: [2, 6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h6-debts',      house: 6, text: 'Will I be able to clear my debts?', governingHouses: [2, 6, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h6-competition',house: 6, text: 'Will I succeed in the competition?', governingHouses: [6, 10, 11], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 7: marriage, spouse, partnership, lost person, opponent ----
+    { id: 'h7-marriage',   house: 7, text: 'Will my marriage take place?', governingHouses: [2, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h7-spouse',     house: 7, text: 'What is my future spouse like, and when will I meet them?', governingHouses: [2, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h7-partnership',house: 7, text: 'Will my business partnership be successful?', governingHouses: [7, 10, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h7-lostperson', house: 7, text: 'Where is the missing person, and will they return?', governingHouses: [4, 7, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'WHY'] },
+    { id: 'h7-opponent',   house: 7, text: 'Will I prevail over my opponent?', governingHouses: [6, 7, 8], handler: 'litigation', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+
+    // ---- House 8: longevity, obstacles, accidents, inheritance, hidden, chronic ----
+    { id: 'h8-longevity',  house: 8, text: 'Is there any threat to longevity at present?', governingHouses: [1, 3, 8], handler: 'longevity', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h8-obstacles',  house: 8, text: 'Will the current obstacles in my life clear?', governingHouses: [6, 8, 12], handler: 'longevity', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h8-inheritance',house: 8, text: 'Will I receive the inheritance or legacy?', governingHouses: [2, 8, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h8-chronic',    house: 8, text: 'Will my chronic illness be cured?', governingHouses: [1, 6, 8, 12], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h8-hidden',     house: 8, text: 'Will the hidden matter that worries me be resolved?', governingHouses: [4, 8, 12], handler: 'longevity', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 9: long/foreign journeys, fortune, higher education, father, spirituality, legal ----
+    { id: 'h9-foreign',    house: 9, text: 'Will I travel abroad on a long journey?', governingHouses: [3, 9, 12], handler: 'travel', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h9-fortune',    house: 9, text: 'Will fortune favour me in this matter?', governingHouses: [5, 9, 11], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h9-highered',   house: 9, text: 'Will I succeed in higher or specialised education?', governingHouses: [4, 5, 9], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h9-father',     house: 9, text: "Will my father's matter or health be favourable?", governingHouses: [9, 4, 11], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h9-spiritual',  house: 9, text: 'Will I progress on my spiritual path?', governingHouses: [5, 9, 12], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 10: career, profession, promotion, status, authority, business ----
+    { id: 'h10-career',    house: 10, text: 'Will my career advance?', governingHouses: [2, 6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-promotion', house: 10, text: 'Will I get the promotion I seek?', governingHouses: [6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-government',house: 10, text: 'Will I succeed in my dealings with the government or authority?', governingHouses: [10, 11, 6], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h10-business',  house: 10, text: 'Will my business prosper?', governingHouses: [7, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- House 11: gains, fulfilment of desires, income, friends, recovery, elder siblings ----
+    { id: 'h11-gains',     house: 11, text: 'Will I achieve the gain I desire?', governingHouses: [2, 6, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h11-desire',    house: 11, text: 'Will my wish or desire be fulfilled?', governingHouses: [5, 9, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h11-income',    house: 11, text: 'Will my income increase?', governingHouses: [2, 10, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h11-friends',   house: 11, text: 'Will I gain support from friends in this matter?', governingHouses: [3, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h11-eldersibling', house: 11, text: 'Will the matter concerning my elder sibling go well?', governingHouses: [3, 9, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+
+    // ---- House 12: expenditure, losses, foreign residence, hospitalisation, imprisonment, liberation, secret enemies ----
+    { id: 'h12-expenditure', house: 12, text: 'Will my heavy expenditure and losses come under control?', governingHouses: [2, 6, 12], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h12-foreign-res', house: 12, text: 'Will I settle in a foreign land?', governingHouses: [3, 9, 12], handler: 'travel', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h12-hospital',   house: 12, text: 'Will my hospitalisation or confinement end soon?', governingHouses: [1, 6, 12], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h12-imprisonment', house: 12, text: 'Will I be freed from confinement or imprisonment?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h12-liberation', house: 12, text: 'Will I attain spiritual liberation and inner peace?', governingHouses: [5, 9, 12], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h12-secretenemies', house: 12, text: 'Will I be protected from my secret enemies?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+
+    // ---- Missing / lost-article set ----
+    { id: 'miss-article',   house: 'missing', text: 'Where is my lost article and will I recover it?', governingHouses: [2, 4, 6, 7, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'WHY'] },
+    { id: 'miss-jewellery', house: 'missing', text: 'Will my lost jewellery or valuables be found?', governingHouses: [2, 4, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'WHY'] },
+    { id: 'miss-document',  house: 'missing', text: 'Will my misplaced documents or keys be recovered?', governingHouses: [2, 4, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'WHY'] },
+    { id: 'miss-stolen',    house: 'missing', text: 'Was my article stolen, and who is the thief?', governingHouses: [2, 6, 7, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'WHY'] }
+  ];
+
+  // In-memory list of custom (user-submitted) questions; the UI layer loads
+  // these from localStorage on init and appends new ones at runtime.
+  catalog._custom = [];
+
+  // Built-in catalog merged with any loaded custom questions.
+  catalog.getCatalog = function getCatalog() {
+    return catalog.mergeCustom(catalog.QUESTION_CATALOG, catalog._custom);
+  };
+
+  // Group questions under house headings (1..12 then 'missing').
+  catalog.groupByHouse = function groupByHouse(questions) {
+    const groups = {};
+    for (let h = 1; h <= 12; h++) groups[h] = [];
+    groups.missing = [];
+    (questions || []).forEach(function (q) {
+      const key = (q.house === 'missing') ? 'missing' : q.house;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(q);
+    });
+    return groups;
+  };
+
+  // Trimmed, case-insensitive substring filter on question text; returns all
+  // matches (mirrors ui.searchCities semantics, with no cap).
+  catalog.searchCatalog = function searchCatalog(query, questions) {
+    const list = questions || [];
+    if (query == null) return list.slice();
+    const q = String(query).trim().toLowerCase();
+    if (!q) return list.slice();
+    return list.filter(function (item) {
+      return String(item.text || '').toLowerCase().indexOf(q) >= 0;
+    });
+  };
+
+  // Reject empty/whitespace text or zero houses; otherwise ok.
+  catalog.validateCustom = function validateCustom(text, houses) {
+    if (text == null || String(text).trim() === '') {
+      return { ok: false, message: 'Please enter the question text.' };
+    }
+    if (!Array.isArray(houses) || houses.length === 0) {
+      return { ok: false, message: 'Please select at least one governing house.' };
+    }
+    const allValid = houses.every(function (h) {
+      return typeof h === 'number' && Math.floor(h) === h && h >= 1 && h <= 12;
+    });
+    if (!allValid) {
+      return { ok: false, message: 'Governing houses must be whole numbers between 1 and 12.' };
+    }
+    return { ok: true };
+  };
+
+  // Build a normalised custom question (primary house = min(houses);
+  // handler derived via HOUSE_DEFAULT_HANDLER; full interrogative set).
+  catalog.makeCustomQuestion = function makeCustomQuestion(text, houses) {
+    const sorted = houses.slice().sort(function (a, b) { return a - b; });
+    const primary = sorted[0];
+    const handler = catalog.HOUSE_DEFAULT_HANDLER[primary];
+    const id = 'custom-' + primary + '-' + Date.now().toString(36) + '-' +
+      Math.random().toString(36).slice(2, 7);
+    return {
+      id: id,
+      house: primary,
+      text: String(text).trim(),
+      governingHouses: sorted,
+      handler: handler,
+      interrogatives: ALL_INTERROGATIVES.slice(),
+      custom: true,
+      source: 'user'
+    };
+  };
+
+  // Pure merge of built-ins + persisted customs.
+  catalog.mergeCustom = function mergeCustom(base, customList) {
+    return (base || []).slice().concat(customList || []);
+  };
+
+  // Return the handler key, validating it exists in interpret.CATEGORY_HOUSES.
+  catalog.resolveHandler = function resolveHandler(question) {
+    const handler = question && question.handler;
+    if (!handler || !interpret.CATEGORY_HOUSES[handler]) {
+      throw new Error('No interpretation handler available for this question' +
+        (question && question.id ? ' ("' + question.id + '")' : '') +
+        ': handler "' + handler + '" is not defined in the application.');
+    }
+    return handler;
+  };
+
+
+  /* =====================================================================
    * UI LAYER  (KPApp.ui)
    * ---------------------------------------------------------------------
    * Builds the Manual / Instant Prashna forms, validates input, runs the
@@ -2237,8 +2787,9 @@
       return { ok: false, message: 'Please provide a valid numeric Timezone offset (hours).' };
     }
     const category = raw.category;
-    if (!category || !interpret.CATEGORY_HOUSES[category]) {
-      return { ok: false, message: 'Please select a Query category.' };
+    const questionId = (raw.questionId == null) ? '' : String(raw.questionId).trim();
+    if (!questionId && (!category || !interpret.CATEGORY_HOUSES[category])) {
+      return { ok: false, message: 'Please select a Prashna question or a Query category.' };
     }
 
     // Horary number is optional, but if present must be an integer in range.
@@ -2262,7 +2813,8 @@
         date: String(raw.date).trim(),
         time: String(raw.time).trim(),
         lat: lat, lon: lon, tz: tz,
-        category: category,
+        category: category || '',
+        questionId: questionId,
         horary: horary,
         place: raw.place ? String(raw.place).trim() : '',
         mode: raw.mode || 'manual'
@@ -2286,8 +2838,12 @@
     };
     if (typeof input.horary === 'number') opts.horaryNumber = input.horary;
     const chart = kp.buildChart(opts);
+    if (input.question) {
+      const answer = interpret.answerQuestion(input.question, chart);
+      return { chart: chart, result: null, answer: answer };
+    }
     const result = interpret.interpret(input.category, chart);
-    return { chart: chart, result: result };
+    return { chart: chart, result: result, answer: null };
   };
 
   // --- Rendering helpers (DOM-free, return HTML strings) ----------------
@@ -2333,7 +2889,7 @@
     row('Mode', esc(chart.meta.mode === 'instant' ? 'Instant Prashna' : 'Manual Prashna'));
     row('Ayanamsa (KP)', ui.fmtDeg(chart.ayanamsa).replace(/ [A-Za-z]+$/, '') + ' (' + chart.ayanamsa.toFixed(4) + '&deg;)');
     row('Weekday', esc(weekdayName(chart.meta.weekday)));
-    row('Query', esc(categoryLabel(input.category)));
+    row('Query', esc(input.questionText ? input.questionText : categoryLabel(input.category)));
     if (chart.horaryAscendant) {
       row('Horary Number', esc(chart.horaryNumber) + ' of ' + kp.HORARY_COUNT);
       row('Horary Ascendant', ui.fmtDeg(chart.horaryAscendant.degree) +
@@ -2449,6 +3005,73 @@
     return html;
   };
 
+  // Render the interrogative-labelled sections (only those present in the
+  // answer): Whether, When, Who, Where, How, Why. WHETHER and WHY always
+  // appear; the optional ones appear only when produced.
+  function answerInterrogativesHtml(answer) {
+    let html = '';
+    function sec(title, obj) {
+      if (!obj || !obj.text) return;
+      html += card(title, '<div class="analysis"><p>' + esc(obj.text) + '</p></div>');
+    }
+    sec('Whether \u2014 Outcome', answer.whether);
+    sec('When \u2014 Timing', answer.when);
+    sec('Who \u2014 Person Involved', answer.who);
+    sec('Where \u2014 Place / Direction', answer.where);
+    sec('How \u2014 Manner & Conditions', answer.how);
+    sec('Why \u2014 Astrological Reasoning', answer.why);
+    return html;
+  }
+
+  // Build the full answer HTML for a selected Prashna question (DOM-free).
+  // The interrogative cards sit above the dual-system KP and Hora Shastra
+  // cards; the chart tables, missing-item findings and attribution footer
+  // are rendered exactly as in the legacy results.
+  ui.buildAnswerHtml = function buildAnswerHtml(input, chart, answer) {
+    let html = '';
+    html += prashnaDetailsCard(input, chart);
+    html += answerInterrogativesHtml(answer);
+    html += planetTableCard(chart);
+    html += cuspTableCard(chart);
+    html += significatorsCard(chart);
+    html += rulingPlanetsCard(chart);
+    html += card('KP Analysis (with Ruling Planets)', '<div class="analysis">' + renderParagraphs(answer.kp) + '</div>');
+    html += card('Hora Shastra Analysis', '<div class="analysis">' + renderParagraphs(answer.hora) + '</div>');
+    if (answer.missingItem) html += missingItemCard({ missingItem: answer.missingItem });
+    html += attributionHtml();
+    return html;
+  };
+
+  // --- Custom-question persistence (localStorage; only browser side effect) ---
+  ui.CUSTOM_STORAGE_KEY = 'kp-prashna-custom-questions-v1';
+
+  // Defensively load persisted custom questions; returns [] on missing /
+  // corrupt data. No network request is performed.
+  ui.loadCustomQuestions = function loadCustomQuestions() {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage) return [];
+      const raw = localStorage.getItem(ui.CUSTOM_STORAGE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  // Append a custom question to localStorage (best-effort, offline).
+  ui.saveCustomQuestion = function saveCustomQuestion(q) {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage) return false;
+      const list = ui.loadCustomQuestions();
+      list.push(q);
+      localStorage.setItem(ui.CUSTOM_STORAGE_KEY, JSON.stringify(list));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   // --- Form construction -------------------------------------------------
 
   function categoryOptionsHtml() {
@@ -2456,6 +3079,16 @@
       ui.CATEGORIES.map(function (c) {
         return '<option value="' + esc(c.key) + '">' + esc(c.label) + '</option>';
       }).join('');
+  }
+
+  // Checkbox group of governing houses 1..12 for the custom-question form.
+  function houseCheckboxesHtml(prefix) {
+    let s = '';
+    for (let h = 1; h <= 12; h++) {
+      s += '<label class="house-chk"><input type="checkbox" value="' + h + '" id="' +
+        prefix + '-ch-' + h + '" /> <span>' + h + '</span></label>';
+    }
+    return s;
   }
 
   function cityDatalistHtml(id) {
@@ -2519,6 +3152,19 @@
               '</div>' +
             '</div>' +
           '</fieldset>' +
+          '<div class="field full">' +
+            '<label for="' + prefix + '-question">Prashna Question</label>' +
+            '<div class="question-combo" id="' + prefix + '-question-combo">' +
+              '<input type="text" id="' + prefix + '-question" ' +
+                'role="combobox" aria-autocomplete="list" aria-expanded="false" ' +
+                'aria-controls="' + prefix + '-question-list" ' +
+                'placeholder="Search a question \u2014 e.g. marriage, money, travel, lost" autocomplete="off" />' +
+              '<input type="hidden" id="' + prefix + '-question-id" />' +
+              '<ul id="' + prefix + '-question-list" role="listbox" class="question-suggestions hidden"></ul>' +
+            '</div>' +
+            '<div id="' + prefix + '-question-meta" class="question-meta hidden"></div>' +
+            '<span class="hint">Pick a specific question for a full who / when / where / how / whether / why answer, or choose a Query Category below.</span>' +
+          '</div>' +
           '<div class="field">' +
             '<label for="' + prefix + '-category">Query Category</label>' +
             '<select id="' + prefix + '-category">' + categoryOptionsHtml() + '</select>' +
@@ -2529,6 +3175,18 @@
               'id="' + prefix + '-horary" placeholder="optional, 1\u2013' + kp.HORARY_COUNT + '" />' +
             '<span class="hint">Optional but recommended for KP horary analysis.</span>' +
           '</div>' +
+          '<details class="field full custom-q" id="' + prefix + '-custom-details">' +
+            '<summary>My question isn\u2019t listed \u2014 add it</summary>' +
+            '<div class="custom-q-body">' +
+              '<label for="' + prefix + '-custom-text">Your question</label>' +
+              '<input type="text" id="' + prefix + '-custom-text" ' +
+                'placeholder="Type your Prashna question" autocomplete="off" />' +
+              '<div class="custom-houses-label">Governing house(s)</div>' +
+              '<div class="custom-houses" id="' + prefix + '-custom-houses">' + houseCheckboxesHtml(prefix) + '</div>' +
+              '<button type="button" class="btn-secondary" id="' + prefix + '-custom-add">Add question</button>' +
+              '<div id="' + prefix + '-custom-msg" class="form-msg"></div>' +
+            '</div>' +
+          '</details>' +
         '</div>' +
         geoMsg +
         '<button type="button" class="btn-primary" id="' + prefix + '-analyze">' + btnLabel + '</button>' +
@@ -2691,6 +3349,201 @@
     });
   }
 
+  // --- Question picker + custom-question wiring -------------------------
+
+  // The active catalog (built-ins + loaded customs) used by the pickers.
+  ui._catalog = null;
+  // The currently selected Prashna question object (or null).
+  ui.activeQuestion = null;
+
+  // (Re)build the active catalog from the built-ins merged with persisted
+  // custom questions, and load them into the pure catalog layer too.
+  ui.refreshCatalog = function refreshCatalog() {
+    const customs = ui.loadCustomQuestions();
+    KPApp.catalog._custom = customs.slice();
+    ui._catalog = KPApp.catalog.getCatalog();
+    return ui._catalog;
+  };
+
+  // Look up a question by id in the active catalog.
+  ui.getQuestionById = function getQuestionById(id) {
+    const list = ui._catalog || ui.refreshCatalog();
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  };
+
+  // Heading label for a house group.
+  function houseHeadingLabel(key) {
+    return (key === 'missing') ? 'Missing / Lost Article' : ('House ' + key);
+  }
+
+  // Hide and clear a prefix's question suggestion list.
+  function closeQuestionList(prefix) {
+    const listEl = $(prefix + '-question-list');
+    const inputEl = $(prefix + '-question');
+    if (listEl) { listEl.classList.add('hidden'); listEl.innerHTML = ''; }
+    if (inputEl) { inputEl.setAttribute('aria-expanded', 'false'); inputEl.removeAttribute('aria-activedescendant'); }
+  }
+
+  // Clear the active question selection for a prefix.
+  function clearQuestion(prefix) {
+    const idEl = $(prefix + '-question-id');
+    const metaEl = $(prefix + '-question-meta');
+    if (idEl) idEl.value = '';
+    if (metaEl) { metaEl.classList.add('hidden'); metaEl.innerHTML = ''; }
+    ui.activeQuestion = null;
+  }
+
+  // Record a selected question: set hidden id, fill the input, show the
+  // governing houses, and clear the Query Category (mutual exclusivity).
+  function selectQuestion(prefix, q) {
+    if (!q) return;
+    const inputEl = $(prefix + '-question');
+    const idEl = $(prefix + '-question-id');
+    const metaEl = $(prefix + '-question-meta');
+    const catEl = $(prefix + '-category');
+    if (inputEl) inputEl.value = q.text;
+    if (idEl) idEl.value = q.id;
+    if (catEl) catEl.value = '';            // mutual exclusivity
+    ui.activeQuestion = q;
+    if (metaEl) {
+      metaEl.innerHTML = 'Grouped under <strong>' + esc(houseHeadingLabel(q.house)) +
+        '</strong> &middot; Governing houses: <strong>' + esc((q.governingHouses || []).join(', ')) + '</strong>';
+      metaEl.classList.remove('hidden');
+    }
+    closeQuestionList(prefix);
+  }
+
+  // Render the grouped suggestion list (house headings then option rows).
+  function renderQuestionList(prefix, matches) {
+    const listEl = $(prefix + '-question-list');
+    const inputEl = $(prefix + '-question');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    const groups = KPApp.catalog.groupByHouse(matches);
+    const order = [];
+    for (let h = 1; h <= 12; h++) order.push(h);
+    order.push('missing');
+    let any = false;
+    order.forEach(function (key) {
+      const arr = groups[key] || [];
+      if (!arr.length) return;
+      any = true;
+      const head = document.createElement('li');
+      head.setAttribute('role', 'presentation');
+      head.className = 'q-group-heading';
+      head.textContent = houseHeadingLabel(key);
+      listEl.appendChild(head);
+      arr.forEach(function (q) {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'option');
+        li.className = 'q-option';
+        li.textContent = q.text;
+        li.dataset.qid = q.id;
+        li.addEventListener('mousedown', function (ev) {
+          ev.preventDefault();
+          selectQuestion(prefix, ui.getQuestionById(this.dataset.qid));
+        });
+        li.addEventListener('click', function () {
+          selectQuestion(prefix, ui.getQuestionById(this.dataset.qid));
+        });
+        li.addEventListener('touchend', function (ev) {
+          ev.preventDefault();
+          selectQuestion(prefix, ui.getQuestionById(this.dataset.qid));
+        });
+        listEl.appendChild(li);
+      });
+    });
+    if (any) {
+      listEl.classList.remove('hidden');
+      if (inputEl) inputEl.setAttribute('aria-expanded', 'true');
+    } else {
+      closeQuestionList(prefix);
+    }
+  }
+
+  // Wire the searchable, house-grouped question picker for a prefix.
+  function wireQuestionPicker(prefix) {
+    const inputEl = $(prefix + '-question');
+    const listEl = $(prefix + '-question-list');
+    const catEl = $(prefix + '-category');
+    if (!inputEl || !listEl) return;
+
+    function openAll() {
+      renderQuestionList(prefix, ui._catalog || ui.refreshCatalog());
+    }
+
+    inputEl.addEventListener('input', function () {
+      const q = inputEl.value;
+      // Typing invalidates a prior selection until a new pick is made.
+      const idEl = $(prefix + '-question-id');
+      if (idEl && idEl.value) clearQuestion(prefix);
+      const matches = KPApp.catalog.searchCatalog(q, ui._catalog || ui.refreshCatalog());
+      renderQuestionList(prefix, matches);
+    });
+
+    inputEl.addEventListener('focus', function () {
+      if (!$(prefix + '-question-id').value && !inputEl.value.trim()) openAll();
+    });
+
+    inputEl.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') closeQuestionList(prefix);
+    });
+
+    // Mutual exclusivity: choosing a category clears the active question.
+    if (catEl) {
+      catEl.addEventListener('change', function () {
+        if (catEl.value) {
+          if (inputEl) inputEl.value = '';
+          clearQuestion(prefix);
+          closeQuestionList(prefix);
+        }
+      });
+    }
+
+    // Close the dropdown when clicking outside the combobox.
+    document.addEventListener('click', function (ev) {
+      const combo = $(prefix + '-question-combo');
+      if (combo && !combo.contains(ev.target)) closeQuestionList(prefix);
+    });
+  }
+
+  // Wire the custom-question form (validate, add, persist, re-render picker).
+  function wireCustomQuestion(prefix) {
+    const btn = $(prefix + '-custom-add');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      const msgEl = $(prefix + '-custom-msg');
+      hideMsg(msgEl);
+      const textEl = $(prefix + '-custom-text');
+      const text = textEl ? textEl.value : '';
+      const houses = [];
+      for (let h = 1; h <= 12; h++) {
+        const chk = $(prefix + '-ch-' + h);
+        if (chk && chk.checked) houses.push(h);
+      }
+      const v = KPApp.catalog.validateCustom(text, houses);
+      if (!v.ok) {
+        showMsg(msgEl, v.message, 'error');
+        return;
+      }
+      const q = KPApp.catalog.makeCustomQuestion(text, houses);
+      ui.saveCustomQuestion(q);
+      ui.refreshCatalog();
+      // Reset the form fields.
+      if (textEl) textEl.value = '';
+      for (let h = 1; h <= 12; h++) {
+        const chk = $(prefix + '-ch-' + h);
+        if (chk) chk.checked = false;
+      }
+      showMsg(msgEl, 'Added under House ' + q.house + '. You can now search and select it above.', 'info');
+      // Select the newly added question for immediate use.
+      selectQuestion(prefix, q);
+    });
+  }
+
   // Gather raw form values for a prefix.
   function gatherForm(prefix, mode) {
     return {
@@ -2701,6 +3554,7 @@
       lon: $(prefix + '-lon') ? $(prefix + '-lon').value : '',
       tz: $(prefix + '-tz') ? $(prefix + '-tz').value : '',
       category: $(prefix + '-category') ? $(prefix + '-category').value : '',
+      questionId: $(prefix + '-question-id') ? $(prefix + '-question-id').value : '',
       horary: $(prefix + '-horary') ? $(prefix + '-horary').value : '',
       mode: mode
     };
@@ -2720,8 +3574,19 @@
           showMsg(errEl, v.message, 'error');
           return;
         }
+        if (v.value.questionId) {
+          const q = ui.getQuestionById(v.value.questionId);
+          if (!q) {
+            showMsg(errEl, 'The selected question could not be found. Please pick it again.', 'error');
+            return;
+          }
+          v.value.question = q;
+          v.value.questionText = q.text;
+        }
         const out = ui.runAnalysis(v.value);
-        const html = ui.buildResultsHtml(v.value, out.chart, out.result);
+        const html = out.answer
+          ? ui.buildAnswerHtml(v.value, out.chart, out.answer)
+          : ui.buildResultsHtml(v.value, out.chart, out.result);
         const results = $('results');
         if (results) {
           results.innerHTML = html;
@@ -2791,6 +3656,14 @@
     wireCityAutocomplete('instant');
     wireAnalyze('manual', 'manual');
     wireAnalyze('instant', 'instant');
+
+    // Load persisted custom questions and merge into the active catalog,
+    // then wire the question picker and custom-question form for both forms.
+    ui.refreshCatalog();
+    wireQuestionPicker('manual');
+    wireQuestionPicker('instant');
+    wireCustomQuestion('manual');
+    wireCustomQuestion('instant');
 
     // Default the manual date/time to "now" for convenience (editable).
     prefillNow('manual');
