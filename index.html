@@ -469,6 +469,7 @@
     <nav class="tab-bar" role="tablist" aria-label="Prashna mode">
       <button type="button" role="tab" id="tab-manual" class="active" aria-selected="true">Manual Prashna</button>
       <button type="button" role="tab" id="tab-instant" aria-selected="false">Instant Prashna</button>
+      <button type="button" role="tab" id="tab-mooka" aria-selected="false">Mooka Prashna</button>
     </nav>
 
     <section id="form-area"></section>
@@ -2005,6 +2006,224 @@
   KPApp.interpretQuery = interpret.interpret;
 
   /* =====================================================================
+   * MOOKA PRASHNA (SILENT QUERY) ENGINE  (interpret.analyzeMookaPrashna)
+   * ---------------------------------------------------------------------
+   * A pure, DOM-free inference engine that deduces the subject(s) most
+   * likely occupying a silent querent's mind from the astrological moment
+   * alone (no stated question, no chosen category). It layers a
+   * deterministic house-scoring + house -> category mapping on top of the
+   * existing KP significator, ruling-planet and dual-system reasoning
+   * machinery. It never mutates the chart and performs no DOM / storage /
+   * network / time / randomness access. Reuses planetHouseSignifications,
+   * kpReasoning, horaShastraReasoning, CATEGORY_HOUSES, CATEGORY_LABELS,
+   * CATEGORY_KARAKA and kp.houseOfLongitude.
+   * ===================================================================== */
+
+  // Fixed scoring weights (module constants) so the output is reproducible.
+  const MOOKA_WEIGHTS = {
+    ascSubLord:   5.0,  // ascendant sub-lord -- the matter itself (strongest KP indicator)
+    moonOccupied: 3.0,  // house the Moon physically occupies (the active mind)
+    moonStarLord: 2.5,  // houses the Moon's star-lord signifies
+    moonSubLord:  2.0,  // houses the Moon's sub-lord signifies
+    moonOwned:    1.5,  // house owned by the Moon (Cancer cusp)
+    rulingPlanet: 2.0,  // per ruling planet that signifies the house (fructification)
+    tenancy:      1.0   // per planet occupying the house
+  };
+  const MOOKA_KARAKA_BONUS = 2.0; // added when a category's karaka is a strong indicator
+  const MOOKA_MAX_CANDIDATES = 5; // cap on the ranked list returned
+  interpret.MOOKA_WEIGHTS = MOOKA_WEIGHTS;
+  interpret.MOOKA_KARAKA_BONUS = MOOKA_KARAKA_BONUS;
+  interpret.MOOKA_MAX_CANDIDATES = MOOKA_MAX_CANDIDATES;
+
+  // Phase 1 -- score the twelve houses from the silent-prashna indicators.
+  // Returns { score:{1..12}, evidence... }; never mutates the chart.
+  function mookaScoreHouses(chart) {
+    if (!chart || !chart.significators || !chart.rulingPlanets) {
+      throw new Error('analyzeMookaPrashna requires a built chart with significators and ruling planets');
+    }
+    const W = MOOKA_WEIGHTS;
+    const psig = interpret.planetHouseSignifications(chart);
+    const score = {};
+    for (let h = 1; h <= 12; h++) score[h] = 0;
+
+    function addSignified(planet, weight) {
+      const hs = psig[planet] || [];
+      for (let i = 0; i < hs.length; i++) {
+        const h = hs[i];
+        if (h >= 1 && h <= 12) score[h] += weight;
+      }
+    }
+
+    // (1) Ascendant sub-lord -- the primary indicator of the matter in KP.
+    const ascSub = chart.ascendant.subLord;
+    addSignified(ascSub, W.ascSubLord);
+
+    // (2) Moon = manas (the mind). Several Moon-linked contributions.
+    const cuspLons = cuspLonsOf(chart);
+    const moonPlanet = planetByName(chart, 'Moon');
+    const moonHouse = moonPlanet ? houseOfLongitude(moonPlanet.longitude, cuspLons) : null;
+    if (moonHouse != null && moonHouse >= 1 && moonHouse <= 12) score[moonHouse] += W.moonOccupied;
+
+    const rp = chart.rulingPlanets;
+    addSignified(rp.moonStarLord, W.moonStarLord);
+    addSignified(rp.moonSubLord, W.moonSubLord);
+
+    // House owned by the Moon (the Cancer cusp), if any.
+    let moonOwnedHouse = null;
+    for (let i = 0; i < chart.cusps.length; i++) {
+      if (chart.cusps[i].signLord === 'Moon') { moonOwnedHouse = chart.cusps[i].house; break; }
+    }
+    if (moonOwnedHouse != null) score[moonOwnedHouse] += W.moonOwned;
+
+    // (3) Ruling planets jointly signify houses -> fructification weight.
+    const rulingList = dedup([
+      rp.dayLord, rp.moonSignLord, rp.moonStarLord, rp.moonSubLord,
+      rp.lagnaSignLord, rp.lagnaStarLord, rp.lagnaSubLord
+    ]);
+    const signifiedCount = {};
+    for (let h = 1; h <= 12; h++) signifiedCount[h] = 0;
+    rulingList.forEach(function (planet) {
+      const hs = psig[planet] || [];
+      hs.forEach(function (h) {
+        if (h >= 1 && h <= 12) { score[h] += W.rulingPlanet; signifiedCount[h] += 1; }
+      });
+    });
+
+    // (4) Tenancy -- a strongly tenanted house draws the mind.
+    const tenancy = {};
+    for (let h = 1; h <= 12; h++) tenancy[h] = 0;
+    chart.planets.forEach(function (p) {
+      const h = houseOfLongitude(p.longitude, cuspLons);
+      if (h >= 1 && h <= 12) tenancy[h] += 1;
+    });
+    for (let h = 1; h <= 12; h++) score[h] += tenancy[h] * W.tenancy;
+
+    const rulingSignifiedHouses = [];
+    for (let h = 1; h <= 12; h++) if (signifiedCount[h] >= 2) rulingSignifiedHouses.push(h);
+
+    return {
+      score: score,
+      psig: psig,
+      ascSubLord: ascSub,
+      ascSubLordHouses: (psig[ascSub] || []).slice(),
+      moonHouse: moonHouse,
+      moonOwnedHouse: moonOwnedHouse,
+      moonStarLord: rp.moonStarLord,
+      moonStarLordHouses: (psig[rp.moonStarLord] || []).slice(),
+      moonSubLord: rp.moonSubLord,
+      moonSubLordHouses: (psig[rp.moonSubLord] || []).slice(),
+      rulingList: rulingList,
+      rulingSignifiedHouses: rulingSignifiedHouses,
+      tenancy: tenancy
+    };
+  }
+
+  // Phase 2 -- map house scores to life-area (category) scores.
+  function mookaScoreCategories(houseScore, chart, strongIndicators) {
+    const catScore = {};
+    Object.keys(CATEGORY_HOUSES).forEach(function (category) {
+      const houses = CATEGORY_HOUSES[category];
+      let s = 0;
+      const planetsSet = {};
+      houses.forEach(function (h) {
+        s += houseScore[h] || 0;
+        (chart.significators[h] || []).forEach(function (planet) { planetsSet[planet] = true; });
+      });
+      // Karaka reinforcement: boost when the area's significator planet is
+      // itself a strong indicator (asc sub-lord, a Moon lord, or a ruling planet).
+      const karaka = CATEGORY_KARAKA[category];
+      if (karaka && strongIndicators.indexOf(karaka) >= 0) s += MOOKA_KARAKA_BONUS;
+      const planets = Object.keys(planetsSet).sort(function (a, b) {
+        return kp.BODIES.indexOf(a) - kp.BODIES.indexOf(b);
+      });
+      catScore[category] = { score: s, houses: houses.slice(), planets: planets };
+    });
+    return catScore;
+  }
+
+  // Phase 3 -- rank, normalize and assemble the MookaResult.
+  interpret.analyzeMookaPrashna = function analyzeMookaPrashna(chart) {
+    if (!chart || !chart.significators || !chart.rulingPlanets) {
+      throw new Error('analyzeMookaPrashna requires a built chart with significators and ruling planets');
+    }
+    const ev = mookaScoreHouses(chart);
+    const rp = chart.rulingPlanets;
+    const strongIndicators = dedup(
+      [ev.ascSubLord, rp.moonStarLord, rp.moonSubLord, rp.moonSignLord].concat(ev.rulingList)
+    );
+    const catScore = mookaScoreCategories(ev.score, chart, strongIndicators);
+
+    // Deterministic ordering: score DESC, then fixed CATEGORY order, then key ASC.
+    const categoryOrder = Object.keys(CATEGORY_HOUSES);
+    const orderIndex = {};
+    categoryOrder.forEach(function (k, i) { orderIndex[k] = i; });
+
+    const ranked = Object.keys(catScore).map(function (k) {
+      return {
+        category: k, score: catScore[k].score,
+        houses: catScore[k].houses, planets: catScore[k].planets
+      };
+    }).sort(function (a, b) {
+      if (b.score !== a.score) return b.score - a.score;
+      if (orderIndex[a.category] !== orderIndex[b.category]) return orderIndex[a.category] - orderIndex[b.category];
+      return a.category < b.category ? -1 : (a.category > b.category ? 1 : 0);
+    });
+
+    // Keep meaningful candidates; always keep at least one (degenerate fallback).
+    let top = ranked.filter(function (c) { return c.score > 0; }).slice(0, MOOKA_MAX_CANDIDATES);
+    if (top.length === 0) top = [ranked[0]];
+
+    let total = 0;
+    top.forEach(function (c) { total += c.score; });
+
+    function round4(x) { return Math.round(x * 10000) / 10000; }
+
+    const candidates = top.map(function (c) {
+      // Normalize over the returned set; guard divide-by-zero. Confidences
+      // sum to <= 1 (raw normalization), each strictly > 0 since score > 0.
+      const confidence = (total > 0) ? (c.score / total) : (1 / top.length);
+      const labelObj = interpret.CATEGORY_LABELS[c.category];
+      const label = (labelObj && labelObj.name) ? labelObj.name : c.category;
+      return {
+        category: c.category,
+        label: label,
+        houses: c.houses.slice(),
+        planets: c.planets.slice(),
+        score: c.score,
+        confidence: confidence,
+        confidencePct: Math.round(round4(confidence) * 100),
+        kp: interpret.kpReasoning(c.category, chart),
+        hora: interpret.horaShastraReasoning(c.category, chart)
+      };
+    });
+
+    const headline = 'The querent is most likely thinking about ' +
+      candidates[0].label + ' (' + candidates[0].confidencePct + '% relative likelihood).';
+
+    return {
+      headline: headline,
+      candidates: candidates,
+      indicators: {
+        ascSubLord: ev.ascSubLord,
+        ascSubLordHouses: ev.ascSubLordHouses,
+        moon: {
+          house: ev.moonHouse,
+          ownHouse: ev.moonOwnedHouse,
+          starLord: ev.moonStarLord,
+          starLordHouses: ev.moonStarLordHouses,
+          subLord: ev.moonSubLord,
+          subLordHouses: ev.moonSubLordHouses
+        },
+        rulingPlanets: ev.rulingList.slice(),
+        rulingSignifiedHouses: ev.rulingSignifiedHouses.slice(),
+        tenancy: ev.tenancy
+      },
+      houseScores: ev.score,
+      attribution: ATTRIBUTION
+    };
+  };
+
+  /* =====================================================================
    * COMPREHENSIVE ANSWER ENGINE  (interpret.answerQuestion)
    * ---------------------------------------------------------------------
    * Layers a who / when / where / how / whether / why interrogative
@@ -2788,7 +3007,7 @@
     }
     const category = raw.category;
     const questionId = (raw.questionId == null) ? '' : String(raw.questionId).trim();
-    if (!questionId && (!category || !interpret.CATEGORY_HOUSES[category])) {
+    if (raw.mode !== 'mooka' && !questionId && (!category || !interpret.CATEGORY_HOUSES[category])) {
       return { ok: false, message: 'Please select a Prashna question or a Query category.' };
     }
 
@@ -2838,6 +3057,9 @@
     };
     if (typeof input.horary === 'number') opts.horaryNumber = input.horary;
     const chart = kp.buildChart(opts);
+    if (input.mode === 'mooka') {
+      return { chart: chart, result: null, answer: null, mooka: interpret.analyzeMookaPrashna(chart) };
+    }
     if (input.question) {
       const answer = interpret.answerQuestion(input.question, chart);
       return { chart: chart, result: null, answer: answer };
@@ -2886,7 +3108,7 @@
     row('Latitude', esc(input.lat.toFixed(4)) + '&deg;');
     row('Longitude', esc(input.lon.toFixed(4)) + '&deg;');
     row('Timezone', 'UTC' + (input.tz >= 0 ? '+' : '') + input.tz);
-    row('Mode', esc(chart.meta.mode === 'instant' ? 'Instant Prashna' : 'Manual Prashna'));
+    row('Mode', esc(chart.meta.mode === 'instant' ? 'Instant Prashna' : (chart.meta.mode === 'mooka' ? 'Mooka Prashna (Silent Query)' : 'Manual Prashna')));
     row('Ayanamsa (KP)', ui.fmtDeg(chart.ayanamsa).replace(/ [A-Za-z]+$/, '') + ' (' + chart.ayanamsa.toFixed(4) + '&deg;)');
     row('Weekday', esc(weekdayName(chart.meta.weekday)));
     row('Query', esc(input.questionText ? input.questionText : categoryLabel(input.category)));
@@ -3042,6 +3264,43 @@
     return html;
   };
 
+  // Build the full Mooka Prashna (silent query) result HTML (DOM-free).
+  // Renders the Prashna-details card, an inferred-subject headline card, one
+  // card per ranked Candidate_Subject (label, likelihood, governing houses,
+  // indicating planets, KP and Hora Shastra reasoning), the chart tables and
+  // the attribution footer -- reusing the existing card / paragraph helpers.
+  ui.buildMookaResultsHtml = function buildMookaResultsHtml(input, chart, mooka) {
+    let html = '';
+    html += prashnaDetailsCard(input, chart);
+
+    html += card('Silent Query \u2014 Inferred Subject',
+      '<div class="analysis"><p class="verdict-line">' + esc(mooka.headline) + '</p>' +
+      '<p>In a Mooka Prashna no question is stated; the subject on the querent\u2019s mind is ' +
+      'inferred from the moment\u2019s ascendant sub-lord, the Moon (manas), the ruling planets ' +
+      'and house tenancy. The most strongly indicated life-areas are ranked below.</p></div>');
+
+    (mooka.candidates || []).forEach(function (c, i) {
+      const pct = (typeof c.confidencePct === 'number') ? c.confidencePct : Math.round((c.confidence || 0) * 100);
+      let body = '';
+      body += '<div class="analysis"><p>' +
+        '<strong>Relative likelihood:</strong> ' + pct + '%' +
+        ' &middot; <strong>Governing houses:</strong> ' + esc((c.houses || []).join(', ')) +
+        ' &middot; <strong>Indicating planets:</strong> ' +
+        esc((c.planets && c.planets.length) ? c.planets.join(', ') : 'none') +
+        '</p></div>';
+      body += card('KP Reasoning', '<div class="analysis">' + renderParagraphs(c.kp) + '</div>');
+      body += card('Hora Shastra Reasoning', '<div class="analysis">' + renderParagraphs(c.hora) + '</div>');
+      html += card('#' + (i + 1) + ' \u2014 ' + c.label + ' (' + pct + '%)', body);
+    });
+
+    html += planetTableCard(chart);
+    html += cuspTableCard(chart);
+    html += significatorsCard(chart);
+    html += rulingPlanetsCard(chart);
+    html += attributionHtml();
+    return html;
+  };
+
   // --- Custom-question persistence (localStorage; only browser side effect) ---
   ui.CUSTOM_STORAGE_KEY = 'kp-prashna-custom-questions-v1';
 
@@ -3190,6 +3449,59 @@
         '</div>' +
         geoMsg +
         '<button type="button" class="btn-primary" id="' + prefix + '-analyze">' + btnLabel + '</button>' +
+        '<div id="' + prefix + '-error" class="form-msg error"></div>' +
+      '</div>';
+  }
+
+  // Build the slim Mooka Prashna form: date / time / place only (no question
+  // picker, no category selector, no horary field, no custom-question panel).
+  // The analyze button reads "Analyze Silent Query".
+  function buildMookaFormHtml(prefix) {
+    return '' +
+      '<div class="card form-card" id="' + prefix + '-form">' +
+        '<p class="hint" style="margin-top:0">A <strong>Mooka Prashna</strong> is a silent query: ' +
+          'state no question. Enter only the date, time and place of the moment, then press ' +
+          '\u201cAnalyze Silent Query\u201d to let the chart reveal the subject on your mind.</p>' +
+        '<div class="form-grid">' +
+          '<div class="field">' +
+            '<label for="' + prefix + '-date">Date</label>' +
+            '<input type="date" id="' + prefix + '-date" />' +
+          '</div>' +
+          '<div class="field">' +
+            '<label for="' + prefix + '-time">Time</label>' +
+            '<input type="time" id="' + prefix + '-time" step="60" />' +
+          '</div>' +
+          '<div class="field full">' +
+            '<label for="' + prefix + '-city">Place / City</label>' +
+            '<div class="city-combo" id="' + prefix + '-city-combo">' +
+              '<input type="text" id="' + prefix + '-city" ' +
+                'role="combobox" aria-autocomplete="list" aria-expanded="false" ' +
+                'aria-controls="' + prefix + '-city-list" ' +
+                'placeholder="e.g. Mumbai" autocomplete="off" />' +
+              '<ul id="' + prefix + '-city-list" role="listbox" class="city-suggestions hidden"></ul>' +
+              '<div id="' + prefix + '-city-note" class="city-note hidden"></div>' +
+            '</div>' +
+            '<span class="hint">Start typing a city to auto-fill latitude, longitude and timezone (all editable).</span>' +
+          '</div>' +
+          '<fieldset class="loc-block" id="' + prefix + '-loc">' +
+            '<legend>Location coordinates</legend>' +
+            '<div class="form-grid">' +
+              '<div class="field">' +
+                '<label for="' + prefix + '-lat">Latitude</label>' +
+                '<input type="number" step="any" id="' + prefix + '-lat" placeholder="-90 to 90" />' +
+              '</div>' +
+              '<div class="field">' +
+                '<label for="' + prefix + '-lon">Longitude</label>' +
+                '<input type="number" step="any" id="' + prefix + '-lon" placeholder="-180 to 180" />' +
+              '</div>' +
+              '<div class="field">' +
+                '<label for="' + prefix + '-tz">Timezone (UTC offset, hours)</label>' +
+                '<input type="number" step="any" id="' + prefix + '-tz" placeholder="e.g. 5.5" />' +
+              '</div>' +
+            '</div>' +
+          '</fieldset>' +
+        '</div>' +
+        '<button type="button" class="btn-primary" id="' + prefix + '-analyze">Analyze Silent Query</button>' +
         '<div id="' + prefix + '-error" class="form-msg error"></div>' +
       '</div>';
   }
@@ -3599,6 +3911,37 @@
     });
   }
 
+  // Attach the Mooka (silent query) analyze handler. Gathers only the
+  // date/time/place form values, validates them in mooka mode (no question /
+  // category required), runs the engine and renders the ranked candidates.
+  function wireMookaAnalyze(prefix) {
+    const btn = $(prefix + '-analyze');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      const errEl = $(prefix + '-error');
+      hideMsg(errEl);
+      try {
+        const raw = gatherForm(prefix, 'mooka');
+        const v = ui.validateInput(raw);
+        if (!v.ok) {
+          showMsg(errEl, v.message, 'error');
+          return;
+        }
+        v.value.questionText = 'Mooka Prashna \u2014 silent query';
+        const out = ui.runAnalysis(v.value);
+        const html = ui.buildMookaResultsHtml(v.value, out.chart, out.mooka);
+        const results = $('results');
+        if (results) {
+          results.innerHTML = html;
+          results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (e) {
+        showMsg(errEl, 'Could not cast the chart: ' + (e && e.message ? e.message : String(e)) +
+          '. Please check your inputs and try again.', 'error');
+      }
+    });
+  }
+
   // Prefill date/time with the current device moment for a prefix.
   function prefillNow(prefix) {
     const now = new Date();
@@ -3648,14 +3991,17 @@
     if (area) {
       area.innerHTML =
         '<div id="manual-pane">' + buildFormHtml('manual', 'manual') + '</div>' +
-        '<div id="instant-pane" class="hidden">' + buildFormHtml('instant', 'instant') + '</div>';
+        '<div id="instant-pane" class="hidden">' + buildFormHtml('instant', 'instant') + '</div>' +
+        '<div id="mooka-pane" class="hidden">' + buildMookaFormHtml('mooka') + '</div>';
     }
 
     // City autocomplete + analyze handlers for both forms.
     wireCityAutocomplete('manual');
     wireCityAutocomplete('instant');
+    wireCityAutocomplete('mooka');
     wireAnalyze('manual', 'manual');
     wireAnalyze('instant', 'instant');
+    wireMookaAnalyze('mooka');
 
     // Load persisted custom questions and merge into the active catalog,
     // then wire the question picker and custom-question form for both forms.
@@ -3667,30 +4013,41 @@
 
     // Default the manual date/time to "now" for convenience (editable).
     prefillNow('manual');
+    prefillNow('mooka');
 
     // Tab switching.
     const tabManual = $('tab-manual');
     const tabInstant = $('tab-instant');
+    const tabMooka = $('tab-mooka');
     const paneManual = $('manual-pane');
     const paneInstant = $('instant-pane');
+    const paneMooka = $('mooka-pane');
 
     function activate(which) {
       const manualOn = (which === 'manual');
+      const instantOn = (which === 'instant');
+      const mookaOn = (which === 'mooka');
       if (tabManual) {
         tabManual.classList.toggle('active', manualOn);
         tabManual.setAttribute('aria-selected', manualOn ? 'true' : 'false');
       }
       if (tabInstant) {
-        tabInstant.classList.toggle('active', !manualOn);
-        tabInstant.setAttribute('aria-selected', !manualOn ? 'true' : 'false');
+        tabInstant.classList.toggle('active', instantOn);
+        tabInstant.setAttribute('aria-selected', instantOn ? 'true' : 'false');
+      }
+      if (tabMooka) {
+        tabMooka.classList.toggle('active', mookaOn);
+        tabMooka.setAttribute('aria-selected', mookaOn ? 'true' : 'false');
       }
       if (paneManual) paneManual.classList.toggle('hidden', !manualOn);
-      if (paneInstant) paneInstant.classList.toggle('hidden', manualOn);
-      if (!manualOn && !instantPrimed) primeInstant();
+      if (paneInstant) paneInstant.classList.toggle('hidden', !instantOn);
+      if (paneMooka) paneMooka.classList.toggle('hidden', !mookaOn);
+      if (instantOn && !instantPrimed) primeInstant();
     }
 
     if (tabManual) tabManual.addEventListener('click', function () { activate('manual'); });
     if (tabInstant) tabInstant.addEventListener('click', function () { activate('instant'); });
+    if (tabMooka) tabMooka.addEventListener('click', function () { activate('mooka'); });
 
     activate('manual');
   };
