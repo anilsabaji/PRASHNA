@@ -3402,7 +3402,7 @@
           '</div>' +
           '<div class="field">' +
             '<label for="' + prefix + '-time">Time</label>' +
-            '<input type="time" id="' + prefix + '-time" step="60" />' +
+            '<input type="time" id="' + prefix + '-time" step="1" />' +
           '</div>' +
           '<div class="field full">' +
             '<label for="' + prefix + '-city">Place / City</label>' +
@@ -3491,7 +3491,7 @@
           '</div>' +
           '<div class="field">' +
             '<label for="' + prefix + '-time">Time</label>' +
-            '<input type="time" id="' + prefix + '-time" step="60" />' +
+            '<input type="time" id="' + prefix + '-time" step="1" />' +
           '</div>' +
           '<div class="field full">' +
             '<label for="' + prefix + '-city">Place / City</label>' +
@@ -3993,7 +3993,7 @@
     const dEl = $(prefix + '-date');
     const tEl = $(prefix + '-time');
     if (dEl) dEl.value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
-    if (tEl) tEl.value = pad(now.getHours()) + ':' + pad(now.getMinutes());
+    if (tEl) tEl.value = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
   }
 
   // Request geolocation for a form prefix and fill {prefix}-lat/-lon/-tz,

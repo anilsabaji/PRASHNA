@@ -458,9 +458,9 @@ describe('Mooka Prashna auto-fetch (time + place) on first activation', () => {
 
     doc.getElementById('tab-mooka').dispatchEvent(new win.Event('click'));
 
-    // Date & time auto-filled with the current device moment.
+    // Date & time auto-filled with the current device moment (seconds precision).
     expect(doc.getElementById('mooka-date').value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(doc.getElementById('mooka-time').value).toMatch(/^\d{2}:\d{2}$/);
+    expect(doc.getElementById('mooka-time').value).toMatch(/^\d{2}:\d{2}:\d{2}$/);
 
     // Latitude / longitude filled from the stubbed geolocation.
     expect(parseFloat(doc.getElementById('mooka-lat').value)).toBeCloseTo(FIXED_LAT, 3);
