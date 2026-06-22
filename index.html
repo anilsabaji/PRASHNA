@@ -3906,9 +3906,17 @@
     const printBtn = $('print-report');
     if (printBtn) {
       printBtn.addEventListener('click', function () {
-        if (typeof window !== 'undefined' && typeof window.print === 'function') {
-          window.print();
-        }
+        if (typeof window === 'undefined' || typeof window.print !== 'function') return;
+        // Browsers use document.title as the default PDF filename, so override
+        // it just for the duration of the print call, then restore it.
+        var prevTitle = (typeof document !== 'undefined') ? document.title : null;
+        var restore = function () {
+          if (prevTitle != null && typeof document !== 'undefined') document.title = prevTitle;
+          if (typeof window.removeEventListener === 'function') window.removeEventListener('afterprint', restore);
+        };
+        if (typeof document !== 'undefined') document.title = 'KP-Prashna-Report';
+        if (typeof window.addEventListener === 'function') window.addEventListener('afterprint', restore);
+        try { window.print(); } finally { restore(); }
       });
     }
     if (results.scrollIntoView) {

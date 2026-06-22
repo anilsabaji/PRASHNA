@@ -79,6 +79,30 @@ describe('Print / Save as PDF action bar', () => {
       win.print = original;
     }
   });
+
+  it('sets document.title to "KP-Prashna-Report" during print and restores it afterward', () => {
+    runMookaAnalysis();
+
+    const btn = doc.getElementById('print-report');
+    expect(btn).toBeTruthy();
+
+    const originalTitle = doc.title;
+    let titleDuringPrint = null;
+    const original = win.print;
+    // Capture the document title at the exact moment window.print() is invoked.
+    win.print = vi.fn(function () {
+      titleDuringPrint = doc.title;
+    });
+    try {
+      btn.dispatchEvent(new win.Event('click'));
+      // During the print call the title must be the PDF filename override.
+      expect(titleDuringPrint).toBe('KP-Prashna-Report');
+      // After the call returns it must be restored to the original value.
+      expect(doc.title).toBe(originalTitle);
+    } finally {
+      win.print = original;
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
