@@ -416,6 +416,16 @@
   }
   .results-attribution .dev { font-weight: 700; color: var(--accent); }
 
+  /* ---------- Results action bar (print / save as PDF) ---------- */
+  .results-actions {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 10px;
+  }
+
+  /* Utility: elements hidden when printing (e.g. the action bar). */
+  .no-print { /* visible on screen; hidden in @media print below */ }
+
   /* ---------- Footer ---------- */
   footer.app-footer {
     text-align: center;
@@ -447,6 +457,8 @@
   @media print {
     body { background: #fff; color: #000; }
     .tab-bar, .results-placeholder { display: none !important; }
+    .no-print { display: none !important; }
+    #form-area { display: none !important; }
     header.app-header {
       background: none;
       color: #000;
@@ -3212,9 +3224,17 @@
     return card('Missing Article \u2014 Findings', '<table>' + rows.join('') + '</table>' + detailHtml);
   }
 
+  // A reusable results-action bar containing the Print / Save as PDF button.
+  // DOM-free: returns an HTML string. The bar carries the `no-print` class so
+  // it is hidden in the printed / saved-as-PDF output.
+  ui.printBarHtml = function () {
+    return '<div class="results-actions no-print"><button type="button" class="btn-primary" id="print-report">\u{1F5A8} Print / Save as PDF</button></div>';
+  };
+
   // Build the full results HTML (DOM-free). input is the validated value.
   ui.buildResultsHtml = function buildResultsHtml(input, chart, result) {
     let html = '';
+    html += ui.printBarHtml();
     html += prashnaDetailsCard(input, chart);
     html += planetTableCard(chart);
     html += cuspTableCard(chart);
@@ -3251,6 +3271,7 @@
   // are rendered exactly as in the legacy results.
   ui.buildAnswerHtml = function buildAnswerHtml(input, chart, answer) {
     let html = '';
+    html += ui.printBarHtml();
     html += prashnaDetailsCard(input, chart);
     html += answerInterrogativesHtml(answer);
     html += planetTableCard(chart);
@@ -3271,6 +3292,7 @@
   // the attribution footer -- reusing the existing card / paragraph helpers.
   ui.buildMookaResultsHtml = function buildMookaResultsHtml(input, chart, mooka) {
     let html = '';
+    html += ui.printBarHtml();
     html += prashnaDetailsCard(input, chart);
 
     html += card('Silent Query \u2014 Inferred Subject',
@@ -3873,6 +3895,35 @@
     };
   }
 
+  // Render rendered-report HTML into #results, wire the Print / Save as PDF
+  // button to the browser's native print dialog, and smooth-scroll into view.
+  // Shared by the manual, instant and Mooka analyze handlers so the wiring
+  // lives in exactly one place.
+  ui.renderResults = function renderResults(html) {
+    const results = $('results');
+    if (!results) return;
+    results.innerHTML = html;
+    const printBtn = $('print-report');
+    if (printBtn) {
+      printBtn.addEventListener('click', function () {
+        if (typeof window === 'undefined' || typeof window.print !== 'function') return;
+        // Browsers use document.title as the default PDF filename, so override
+        // it just for the duration of the print call, then restore it.
+        var prevTitle = (typeof document !== 'undefined') ? document.title : null;
+        var restore = function () {
+          if (prevTitle != null && typeof document !== 'undefined') document.title = prevTitle;
+          if (typeof window.removeEventListener === 'function') window.removeEventListener('afterprint', restore);
+        };
+        if (typeof document !== 'undefined') document.title = 'KP-Prashna-Report';
+        if (typeof window.addEventListener === 'function') window.addEventListener('afterprint', restore);
+        try { window.print(); } finally { restore(); }
+      });
+    }
+    if (results.scrollIntoView) {
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   // Attach the analyze handler for a form prefix.
   function wireAnalyze(prefix, mode) {
     const btn = $(prefix + '-analyze');
@@ -3900,11 +3951,7 @@
         const html = out.answer
           ? ui.buildAnswerHtml(v.value, out.chart, out.answer)
           : ui.buildResultsHtml(v.value, out.chart, out.result);
-        const results = $('results');
-        if (results) {
-          results.innerHTML = html;
-          results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        ui.renderResults(html);
       } catch (e) {
         showMsg(errEl, 'Could not cast the chart: ' + (e && e.message ? e.message : String(e)) +
           '. Please check your inputs and try again.', 'error');
@@ -3931,11 +3978,7 @@
         v.value.questionText = 'Mooka Prashna \u2014 silent query';
         const out = ui.runAnalysis(v.value);
         const html = ui.buildMookaResultsHtml(v.value, out.chart, out.mooka);
-        const results = $('results');
-        if (results) {
-          results.innerHTML = html;
-          results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        ui.renderResults(html);
       } catch (e) {
         showMsg(errEl, 'Could not cast the chart: ' + (e && e.message ? e.message : String(e)) +
           '. Please check your inputs and try again.', 'error');
