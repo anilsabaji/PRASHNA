@@ -446,6 +446,80 @@
     text-decoration: none;
   }
 
+  /* ---------- South Indian Prashna Kundali ---------- */
+  .south-indian-chart {
+    border-collapse: collapse;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 460px;
+    table-layout: fixed;
+  }
+
+  .south-indian-chart td {
+    border: 1.5px solid var(--accent);
+    width: 25%;
+    height: 88px;
+    min-height: 88px;
+    vertical-align: top;
+    padding: 4px 5px;
+    text-align: left;
+    position: relative;
+    font-size: 0.8rem;
+    line-height: 1.25;
+  }
+
+  .south-indian-chart .si-sign {
+    display: block;
+    font-variant: small-caps;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+
+  .south-indian-chart .si-planets {
+    display: block;
+    margin-top: 2px;
+    color: var(--ink);
+    font-size: 0.78rem;
+  }
+
+  .south-indian-chart .si-asc {
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    font-weight: 700;
+    font-size: 0.64rem;
+    background: var(--gold);
+    color: #fff7ee;
+    padding: 0 5px;
+    border-radius: 5px;
+    letter-spacing: 0.02em;
+  }
+
+  .south-indian-chart .si-cell-asc {
+    background: rgba(199, 154, 69, 0.14);
+  }
+
+  .south-indian-chart .si-centre {
+    text-align: center;
+    vertical-align: middle;
+    background: linear-gradient(135deg, rgba(124, 58, 45, 0.06), rgba(199, 154, 69, 0.12));
+  }
+
+  .south-indian-chart .si-title {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.98rem;
+    font-variant: small-caps;
+    letter-spacing: 0.03em;
+  }
+
+  .south-indian-chart .si-meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
   /* ---------- Responsive ---------- */
   @media (max-width: 560px) {
     .page { padding: 14px 10px 36px; }
@@ -468,6 +542,8 @@
     }
     .card { box-shadow: none; border: 1px solid #999; break-inside: avoid; }
     footer.app-footer { border-top: 1px solid #000; }
+    .south-indian-chart td { border: 1.5px solid #333; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .south-indian-chart .si-asc { background: #555; color: #fff; }
   }
 </style>
 </head>
@@ -1324,6 +1400,114 @@
   const NATURE = interpret.NATURE;
   function isMalefic(p) { return NATURE[p] === 'malefic'; }
 
+  // --- Planetary aspects (graha drishti) --------------------------------
+  // Classical Vedic house-based aspects. Every planet aspects the 7th house
+  // from itself (the planet's own house counts as 1). Special aspects:
+  //   Mars    -> 4th & 8th (plus 7th)
+  //   Jupiter -> 5th & 9th (plus 7th)
+  //   Saturn  -> 3rd & 10th (plus 7th)
+  //   Rahu/Ketu -> 5th & 9th (plus 7th)
+  //   Sun, Moon, Mercury, Venus -> 7th only
+  // Pure / DOM-free / deterministic; never mutates the chart.
+  interpret.ASPECT_HOUSES = {
+    Sun: [7], Moon: [7], Mercury: [7], Venus: [7],
+    Mars: [4, 7, 8],
+    Jupiter: [5, 7, 9],
+    Saturn: [3, 7, 10],
+    Rahu: [5, 7, 9],
+    Ketu: [5, 7, 9]
+  };
+
+  interpret.computeAspects = function computeAspects(chart) {
+    const cuspLons = chart.cusps.map(function (c) { return c.longitude; });
+
+    // Occupied house (1..12) of every body.
+    const houseOf = {};
+    chart.planets.forEach(function (p) {
+      houseOf[p.name] = kp.houseOfLongitude(p.longitude, cuspLons);
+    });
+
+    // Planets sitting in each house.
+    const planetsInHouse = {};
+    for (let h = 1; h <= 12; h++) planetsInHouse[h] = [];
+    kp.BODIES.forEach(function (name) {
+      planetsInHouse[houseOf[name]].push(name);
+    });
+
+    const byPlanet = {};
+    const onHouse = {};
+    const onPlanet = {};
+    for (let h = 1; h <= 12; h++) onHouse[h] = [];
+
+    kp.BODIES.forEach(function (name) {
+      const occ = houseOf[name];
+      const nums = interpret.ASPECT_HOUSES[name] || [7];
+      const seen = {};
+      const aspectsHouses = [];
+      nums.forEach(function (n) {
+        const aspHouse = ((occ - 1 + (n - 1)) % 12) + 1;
+        if (!seen[aspHouse]) { seen[aspHouse] = true; aspectsHouses.push(aspHouse); }
+      });
+      aspectsHouses.sort(function (a, b) { return a - b; });
+
+      const aspectsPlanets = [];
+      aspectsHouses.forEach(function (h) {
+        planetsInHouse[h].forEach(function (pn) {
+          if (aspectsPlanets.indexOf(pn) < 0) aspectsPlanets.push(pn);
+        });
+        if (onHouse[h].indexOf(name) < 0) onHouse[h].push(name);
+      });
+
+      byPlanet[name] = { house: occ, aspectsHouses: aspectsHouses, aspectsPlanets: aspectsPlanets };
+    });
+
+    // Planets aspecting each body = aspectors of the house it occupies.
+    kp.BODIES.forEach(function (name) {
+      onPlanet[name] = (onHouse[houseOf[name]] || []).slice();
+    });
+
+    return { byPlanet: byPlanet, onHouse: onHouse, onPlanet: onPlanet };
+  };
+
+  // Build a concise additive paragraph about graha drishti on a primary house.
+  // Cites real planet names so each chart differs. Deterministic; non-mutating.
+  function aspectParagraph(ctx) {
+    const chart = ctx.chart;
+    const asp = interpret.computeAspects(chart);
+    const primary = ctx.config.primary;
+    const aspectors = asp.onHouse[primary] || [];
+    if (!aspectors.length) {
+      return 'Planetary aspects (graha drishti): no planet casts a special aspect on the ' +
+        ordinal(primary) + ' house, so the matter rests chiefly on the cuspal sub-lord ' +
+        ctx.pSubLord + ' and the ruling planets.';
+    }
+    const benefics = aspectors.filter(function (p) { return NATURE[p] === 'benefic'; });
+    const malefics = aspectors.filter(function (p) { return NATURE[p] === 'malefic'; });
+    let txt = 'Planetary aspects (graha drishti): the ' + ordinal(primary) + ' house is aspected by ' +
+      listText(aspectors.map(function (p) { return p + ' (' + NATURE[p] + ')'; })) + '. ';
+    if (benefics.length && benefics.length >= malefics.length) {
+      txt += 'Benefic drishti from ' + listText(benefics) + ' dominates, strengthening and protecting the matter' +
+        (malefics.length ? (' despite the malefic aspect of ' + listText(malefics)) : '') + '. ';
+    } else if (malefics.length) {
+      txt += 'Malefic drishti from ' + listText(malefics) + ' afflicts and obstructs the matter' +
+        (benefics.length ? (', only partly relieved by the benefic aspect of ' + listText(benefics)) : '') + '. ';
+    } else {
+      txt += 'The aspecting influences are neutral, giving a qualified result that the significators must settle. ';
+    }
+    const sub = ctx.pSubLord;
+    const onSub = asp.onPlanet[sub] || [];
+    if (onSub.length) {
+      txt += 'The cuspal sub-lord ' + sub + ' itself receives the aspect of ' + listText(onSub) + '.';
+    } else {
+      const lord = ctx.pSignLord;
+      const onLord = asp.onPlanet[lord] || [];
+      txt += onLord.length
+        ? ('The house lord ' + lord + ' receives the aspect of ' + listText(onLord) + '.')
+        : ('Neither the cuspal sub-lord ' + sub + ' nor the house lord ' + lord + ' receives a special aspect.');
+    }
+    return txt;
+  }
+
   // Cardinal direction ruled by each planet (missing-item bearings).
   interpret.DIRECTION = {
     Sun: 'East', Moon: 'North-West', Mars: 'South', Mercury: 'North',
@@ -1723,6 +1907,9 @@
     // category-specialised passage
     paras.push(categoryKpNote(ctx));
 
+    // aspects (graha drishti) — additive paragraph before the verdict
+    paras.push(aspectParagraph(ctx));
+
     // (e) verdict
     paras.push('KP verdict: ' + j.verdict + ' \u2014 the chart indicates ' + (j.favourable ? ctx.config.yes : ctx.config.no) + '.');
 
@@ -1756,6 +1943,9 @@
           : 'mixed disposition gives a qualified result depending on its associations')) + '.');
 
     paras.push(categoryHoraNote(ctx, lordHouse, houseLord));
+
+    // aspects (graha drishti) — additive paragraph before the final verdict
+    paras.push(aspectParagraph(ctx));
 
     paras.push('Weighing the strength and placement of the house lord ' + houseLord +
       ', the benefic and malefic testimonies, the karaka, and the Moon\u2019s disposition, the traditional verdict is: ' +
@@ -3198,6 +3388,73 @@
     return card('Ruling Planets', '<table>' + body + '</table>');
   }
 
+  // Planet abbreviations for the South Indian chart cells.
+  ui.PLANET_ABBR = {
+    Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju',
+    Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke'
+  };
+
+  // South Indian style Prashna Kundali (DOM-free). Fixed 4x4 grid; signs are
+  // anchored to fixed cells; planets are placed in their sign's box; the
+  // ascendant sign is marked. Returns an HTML card string.
+  ui.buildSouthIndianChartHtml = function buildSouthIndianChartHtml(chart, input) {
+    // Group planet labels by sign index (0=Aries .. 11=Pisces).
+    const bySign = {};
+    for (let s = 0; s < 12; s++) bySign[s] = [];
+    chart.planets.forEach(function (p) {
+      const deg = Math.floor(normalize360(p.longitude) % 30);
+      bySign[p.sign].push((ui.PLANET_ABBR[p.name] || p.name) + ' ' + deg + '\u00b0');
+    });
+    const ascSign = chart.ascendant.sign;
+
+    function signCell(signIdx) {
+      const abbr = ui.SIGN_NAMES[signIdx].slice(0, 3);
+      const isAsc = (signIdx === ascSign);
+      const planets = bySign[signIdx];
+      let inner = '';
+      if (isAsc) inner += '<span class="si-asc">Asc</span>';
+      inner += '<span class="si-sign">' + esc(abbr) + '</span>';
+      inner += '<span class="si-planets">' +
+        (planets.length ? planets.map(esc).join('<br/>') : '') + '</span>';
+      return '<td class="si-cell' + (isAsc ? ' si-cell-asc' : '') + '">' + inner + '</td>';
+    }
+
+    const dateStr = (input && input.date) ? input.date : '';
+    const timeStr = (input && input.time) ? input.time : '';
+    const centre = '<td class="si-centre" colspan="2" rowspan="2">' +
+      '<div class="si-title">Prashna Kundali</div>' +
+      '<div class="si-meta">' + esc(dateStr) + (timeStr ? (' ' + esc(timeStr)) : '') + '</div>' +
+      '<div class="si-meta">Asc: ' + esc(ui.SIGN_NAMES[ascSign]) + '</div>' +
+      '</td>';
+
+    let grid = '<table class="south-indian-chart">';
+    // Row 0: Pisces(11) | Aries(0) | Taurus(1) | Gemini(2)
+    grid += '<tr>' + signCell(11) + signCell(0) + signCell(1) + signCell(2) + '</tr>';
+    // Row 1: Aquarius(10) | [centre 2x2] | Cancer(3)
+    grid += '<tr>' + signCell(10) + centre + signCell(3) + '</tr>';
+    // Row 2: Capricorn(9) | [centre continues] | Leo(4)
+    grid += '<tr>' + signCell(9) + signCell(4) + '</tr>';
+    // Row 3: Sagittarius(8) | Scorpio(7) | Libra(6) | Virgo(5)
+    grid += '<tr>' + signCell(8) + signCell(7) + signCell(6) + signCell(5) + '</tr>';
+    grid += '</table>';
+
+    return card('Prashna Kundali (South Indian)', grid);
+  };
+
+  // Planetary Aspects (graha drishti) table card (DOM-free).
+  ui.buildAspectsCard = function buildAspectsCard(chart) {
+    const asp = interpret.computeAspects(chart);
+    const head = '<tr><th>Planet</th><th>In House</th><th>Aspects Houses</th><th>Aspects Planets</th></tr>';
+    const body = kp.BODIES.map(function (name) {
+      const a = asp.byPlanet[name];
+      return '<tr><td>' + esc(name) + '</td>' +
+        '<td>' + esc(a.house) + '</td>' +
+        '<td>' + esc(a.aspectsHouses.join(', ')) + '</td>' +
+        '<td>' + esc(a.aspectsPlanets.length ? a.aspectsPlanets.join(', ') : '\u2014') + '</td></tr>';
+    }).join('');
+    return card('Planetary Aspects (Graha Drishti)', '<table>' + head + body + '</table>');
+  };
+
   // 8. Missing-item findings card.
   function missingItemCard(result) {
     const mi = result.missingItem;
@@ -3267,11 +3524,13 @@
   ui.buildResultsHtml = function buildResultsHtml(input, chart, result) {
     let html = '';
     html += ui.printBarHtml();
+    html += ui.buildSouthIndianChartHtml(chart, input);
     html += prashnaDetailsCard(input, chart);
     html += planetTableCard(chart);
     html += cuspTableCard(chart);
     html += significatorsCard(chart);
     html += rulingPlanetsCard(chart);
+    html += ui.buildAspectsCard(chart);
     html += card('KP Analysis (with Ruling Planets)', '<div class="analysis">' + renderParagraphs(result.kp) + '</div>');
     html += card('Hora Shastra Analysis', '<div class="analysis">' + renderParagraphs(result.horaShastra) + '</div>');
     if (input.category === 'missingItem') html += missingItemCard(result);
@@ -3304,12 +3563,14 @@
   ui.buildAnswerHtml = function buildAnswerHtml(input, chart, answer) {
     let html = '';
     html += ui.printBarHtml();
+    html += ui.buildSouthIndianChartHtml(chart, input);
     html += prashnaDetailsCard(input, chart);
     html += answerInterrogativesHtml(answer);
     html += planetTableCard(chart);
     html += cuspTableCard(chart);
     html += significatorsCard(chart);
     html += rulingPlanetsCard(chart);
+    html += ui.buildAspectsCard(chart);
     html += card('KP Analysis (with Ruling Planets)', '<div class="analysis">' + renderParagraphs(answer.kp) + '</div>');
     html += card('Hora Shastra Analysis', '<div class="analysis">' + renderParagraphs(answer.hora) + '</div>');
     if (answer.missingItem) html += missingItemCard({ missingItem: answer.missingItem });
@@ -3325,6 +3586,7 @@
   ui.buildMookaResultsHtml = function buildMookaResultsHtml(input, chart, mooka) {
     let html = '';
     html += ui.printBarHtml();
+    html += ui.buildSouthIndianChartHtml(chart, input);
     html += prashnaDetailsCard(input, chart);
 
     html += card('Silent Query \u2014 Inferred Subject',
@@ -3351,6 +3613,7 @@
     html += cuspTableCard(chart);
     html += significatorsCard(chart);
     html += rulingPlanetsCard(chart);
+    html += ui.buildAspectsCard(chart);
     html += attributionHtml();
     return html;
   };
