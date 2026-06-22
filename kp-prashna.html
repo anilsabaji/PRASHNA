@@ -66,6 +66,14 @@
     opacity: 0.95;
   }
 
+  header.app-header .usage-counter {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #ffe9d6;
+    opacity: 0.8;
+    letter-spacing: 0.2px;
+  }
+
   /* ---------- Tab bar ---------- */
   .tab-bar {
     display: flex;
@@ -552,6 +560,7 @@
     <header class="app-header">
       <h1>KP Prashna Astrology</h1>
       <div class="subtitle">Horary analysis &mdash; Hora Shastra &amp; Krishnamurti Paddhati</div>
+      <div id="usage-counter" class="usage-counter"></div>
     </header>
 
     <nav class="tab-bar" role="tablist" aria-label="Prashna mode">
@@ -589,6 +598,7 @@
     kp: {},       // KP astrology layer (placeholder)
     interpret: {},// interpretation layer (placeholder)
     catalog: {},  // question catalog layer (placeholder)
+    usage: {},    // usage-tracking layer (pure, DOM-free)
     ui: {}        // UI layer (placeholder)
   };
 
@@ -2932,6 +2942,150 @@
 
 
   /* =====================================================================
+   * USAGE-TRACKING LAYER  (KPApp.usage)
+   * ---------------------------------------------------------------------
+   * Pure, immutable, deterministic helpers that maintain a usage-statistics
+   * object. This layer is completely DOM-free and side-effect free: it never
+   * touches Date.now / localStorage / network. The caller supplies all
+   * mutable values (timestamps via event.at). This keeps the logic trivially
+   * testable in Node. The app is fully offline with no backend, so usage is
+   * only ever counted PER DEVICE in the browser (see KPApp.ui persistence).
+   * ===================================================================== */
+  const usage = KPApp.usage;
+
+  // The canonical analysis modes we track separately.
+  usage.MODES = ['manual', 'instant', 'mooka'];
+
+  // A fresh, empty statistics object. Always a brand-new object so callers
+  // can safely mutate the copies they own.
+  usage.emptyStats = function emptyStats() {
+    return {
+      total: 0,
+      byMode: { manual: 0, instant: 0, mooka: 0 },
+      byCategory: {},
+      byQuestion: {},
+      firstUsedAt: null,
+      lastUsedAt: null
+    };
+  };
+
+  // Defensively coerce an arbitrary parsed-JSON value into a valid stats
+  // object so a corrupt localStorage entry can never break the app. Missing
+  // fields are filled from emptyStats(); bad types are dropped/ignored.
+  usage.normalize = function normalize(raw) {
+    const out = usage.emptyStats();
+    if (!raw || typeof raw !== 'object') return out;
+
+    // total: a finite, non-negative integer.
+    if (typeof raw.total === 'number' && isFinite(raw.total) && raw.total >= 0) {
+      out.total = Math.floor(raw.total);
+    }
+
+    // byMode: only the three known modes, each a finite non-negative integer.
+    if (raw.byMode && typeof raw.byMode === 'object') {
+      usage.MODES.forEach(function (m) {
+        const v = raw.byMode[m];
+        if (typeof v === 'number' && isFinite(v) && v >= 0) {
+          out.byMode[m] = Math.floor(v);
+        }
+      });
+    }
+
+    // byCategory: { categoryName: count } with non-empty string keys.
+    if (raw.byCategory && typeof raw.byCategory === 'object') {
+      Object.keys(raw.byCategory).forEach(function (k) {
+        if (typeof k !== 'string' || k === '') return;
+        const v = raw.byCategory[k];
+        if (typeof v === 'number' && isFinite(v) && v >= 0) {
+          out.byCategory[k] = Math.floor(v);
+        }
+      });
+    }
+
+    // byQuestion: { id: { count, text } } with non-empty string keys.
+    if (raw.byQuestion && typeof raw.byQuestion === 'object') {
+      Object.keys(raw.byQuestion).forEach(function (k) {
+        if (typeof k !== 'string' || k === '') return;
+        const entry = raw.byQuestion[k];
+        if (!entry || typeof entry !== 'object') return;
+        const count = entry.count;
+        if (typeof count !== 'number' || !isFinite(count) || count < 0) return;
+        out.byQuestion[k] = {
+          count: Math.floor(count),
+          text: (typeof entry.text === 'string') ? entry.text : ''
+        };
+      });
+    }
+
+    // Timestamps: accept strings or finite numbers, else leave null.
+    if (typeof raw.firstUsedAt === 'string' || (typeof raw.firstUsedAt === 'number' && isFinite(raw.firstUsedAt))) {
+      out.firstUsedAt = raw.firstUsedAt;
+    }
+    if (typeof raw.lastUsedAt === 'string' || (typeof raw.lastUsedAt === 'number' && isFinite(raw.lastUsedAt))) {
+      out.lastUsedAt = raw.lastUsedAt;
+    }
+
+    return out;
+  };
+
+  // Record a single usage event, returning a NEW stats object (the input is
+  // never mutated). event = { mode, category, questionId, questionText, at }.
+  usage.record = function record(stats, event) {
+    // Start from a normalized copy so a missing/!object stats arg is tolerated
+    // and the input object is never mutated.
+    const base = usage.normalize((stats && typeof stats === 'object') ? stats : usage.emptyStats());
+    const ev = event || {};
+
+    base.total += 1;
+
+    // Mode: constrain to a known mode, default 'manual'.
+    let mode = ev.mode;
+    if (usage.MODES.indexOf(mode) < 0) mode = 'manual';
+    base.byMode[mode] = (base.byMode[mode] || 0) + 1;
+
+    // Category: only non-empty strings are tracked.
+    if (typeof ev.category === 'string' && ev.category !== '') {
+      base.byCategory[ev.category] = (base.byCategory[ev.category] || 0) + 1;
+    }
+
+    // Question: only non-empty string ids are tracked. Preserve an existing
+    // text when the event does not supply one.
+    if (typeof ev.questionId === 'string' && ev.questionId !== '') {
+      const prev = base.byQuestion[ev.questionId];
+      const prevCount = (prev && typeof prev.count === 'number') ? prev.count : 0;
+      const prevText = (prev && typeof prev.text === 'string') ? prev.text : '';
+      const newText = (typeof ev.questionText === 'string' && ev.questionText !== '')
+        ? ev.questionText
+        : prevText;
+      base.byQuestion[ev.questionId] = { count: prevCount + 1, text: newText };
+    }
+
+    // Timestamps: firstUsedAt is set once; lastUsedAt is set every time.
+    const at = (ev.at == null) ? null : ev.at;
+    if (base.firstUsedAt == null) base.firstUsedAt = at;
+    base.lastUsedAt = at;
+
+    return base;
+  };
+
+  // Return the top-n most-asked questions as { id, text, count }, sorted by
+  // count DESC then id ASC. n defaults to 5.
+  usage.topQuestions = function topQuestions(stats, n) {
+    const norm = usage.normalize(stats);
+    const cap = (typeof n === 'number' && isFinite(n) && n >= 0) ? Math.floor(n) : 5;
+    const list = Object.keys(norm.byQuestion).map(function (id) {
+      const e = norm.byQuestion[id];
+      return { id: id, text: (e && e.text) ? e.text : '', count: (e && e.count) ? e.count : 0 };
+    });
+    list.sort(function (a, b) {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+    });
+    return list.slice(0, cap);
+  };
+
+
+  /* =====================================================================
    * UI LAYER  (KPApp.ui)
    * ---------------------------------------------------------------------
    * Builds the Manual / Instant Prashna forms, validates input, runs the
@@ -2943,6 +3097,51 @@
   const ui = KPApp.ui;
 
   ui.SIGN_NAMES = interpret.SIGN_NAMES;
+
+  /* --- Usage tracking: persistence + recording (the ONLY place new Date()
+   * and localStorage are used for usage). The app is fully offline with no
+   * backend, so usage is only ever counted PER DEVICE in this browser. --- */
+  ui.USAGE_STORAGE_KEY = 'kp-prashna-usage-v1';
+
+  // Read + parse the persisted stats, passing the result through
+  // usage.normalize so corrupt/partial data can never break the app. Returns
+  // a fresh emptyStats() on missing/corrupt/exception.
+  ui.loadUsage = function loadUsage() {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage) return usage.emptyStats();
+      const raw = localStorage.getItem(ui.USAGE_STORAGE_KEY);
+      if (raw == null) return usage.emptyStats();
+      return usage.normalize(JSON.parse(raw));
+    } catch (e) {
+      return usage.emptyStats();
+    }
+  };
+
+  // Persist stats to localStorage (best-effort). Returns true on success,
+  // false on any failure (storage unavailable / quota / serialization).
+  ui.saveUsage = function saveUsage(stats) {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage) return false;
+      localStorage.setItem(ui.USAGE_STORAGE_KEY, JSON.stringify(stats));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Record one usage event: load -> usage.record (stamping the current device
+  // time) -> save -> return the new stats. This is the single integration
+  // point between the pure usage layer and the browser.
+  ui.recordUsage = function recordUsage(event) {
+    const stats = ui.loadUsage();
+    const stamped = {};
+    const ev = event || {};
+    for (const k in ev) { if (Object.prototype.hasOwnProperty.call(ev, k)) stamped[k] = ev[k]; }
+    stamped.at = new Date().toISOString();
+    const next = usage.record(stats, stamped);
+    ui.saveUsage(next);
+    return next;
+  };
 
   // --- Offline city lookup table ----------------------------------------
   // { name, lat, lon, tz } -- tz is the standard UTC offset in hours
@@ -3610,8 +3809,45 @@
       'as the destination to save the report as a PDF file. Enable ' +
       '<strong>"Background graphics"</strong> in the dialog options to keep the colours.</p>' +
       '<button type="button" class="btn-primary" id="print-pane-btn">\u{1F5A8} Print / Save as PDF</button>' +
-      '<div id="print-pane-note" class="form-msg info"></div>');
+      '<div id="print-pane-note" class="form-msg info"></div>') +
+      '<div id="usage-stats">' + ui.buildUsageStatsHtml(ui.loadUsage()) + '</div>';
   }
+
+  // Build the usage-statistics card (DOM-free). Shows the per-device totals:
+  // grand total, per-mode counts, the top 5 most-asked questions, and the
+  // first/last used timestamps when present. The app is offline with no
+  // backend, so these figures only reflect usage ON THIS DEVICE.
+  ui.buildUsageStatsHtml = function buildUsageStatsHtml(stats) {
+    const s = usage.normalize(stats);
+    let body = '';
+    body += '<p class="hint">These figures are stored only in this browser ' +
+      '(no account, no server) and therefore reflect usage <strong>on this device</strong> only.</p>';
+    body += '<p class="usage-total"><strong>Total Prashnas cast:</strong> ' + esc(String(s.total)) + '</p>';
+
+    body += '<p class="usage-modes"><strong>By mode</strong> &mdash; ' +
+      'Manual: ' + esc(String(s.byMode.manual || 0)) + ' &middot; ' +
+      'Instant: ' + esc(String(s.byMode.instant || 0)) + ' &middot; ' +
+      'Mooka: ' + esc(String(s.byMode.mooka || 0)) + '</p>';
+
+    const top = usage.topQuestions(s, 5);
+    if (top.length) {
+      body += '<p><strong>Most-asked questions:</strong></p><ol class="usage-top">';
+      top.forEach(function (q) {
+        const label = (q.text && q.text !== '') ? q.text : q.id;
+        body += '<li>' + esc(label) + ' &mdash; ' + esc(String(q.count)) + '</li>';
+      });
+      body += '</ol>';
+    }
+
+    if (s.firstUsedAt != null || s.lastUsedAt != null) {
+      body += '<p class="usage-dates hint">';
+      if (s.firstUsedAt != null) body += 'First used: ' + esc(String(s.firstUsedAt)) + '. ';
+      if (s.lastUsedAt != null) body += 'Last used: ' + esc(String(s.lastUsedAt)) + '.';
+      body += '</p>';
+    }
+
+    return card('Usage Statistics (this device)', body);
+  };
 
   // Build the full results HTML (DOM-free). input is the validated value.
   ui.buildResultsHtml = function buildResultsHtml(input, chart, result) {
@@ -3931,6 +4167,15 @@
     el.textContent = '';
     el.className = 'form-msg ' + (el.classList.contains('info') ? 'info' : 'error');
   }
+
+  // Refresh the small header usage counter from the persisted per-device
+  // stats. Safe to call when the element is absent (no-op).
+  ui.renderUsageCounter = function renderUsageCounter() {
+    const el = $('usage-counter');
+    if (!el) return;
+    const stats = ui.loadUsage();
+    el.textContent = 'Prashnas cast on this device: ' + stats.total;
+  };
 
   // Deterministically fill lat/lon/tz for a chosen city, independent of the
   // browser's native `change` event. Sets the input value to the city name
@@ -4330,6 +4575,14 @@
           ? ui.buildAnswerHtml(v.value, out.chart, out.answer)
           : ui.buildResultsHtml(v.value, out.chart, out.result);
         ui.renderResults(html);
+        // Record this successful analysis (per-device usage tracking).
+        ui.recordUsage({
+          mode: mode,
+          category: v.value.category || '',
+          questionId: v.value.questionId || '',
+          questionText: v.value.questionText || ''
+        });
+        ui.renderUsageCounter();
       } catch (e) {
         showMsg(errEl, 'Could not cast the chart: ' + (e && e.message ? e.message : String(e)) +
           '. Please check your inputs and try again.', 'error');
@@ -4357,6 +4610,9 @@
         const out = ui.runAnalysis(v.value);
         const html = ui.buildMookaResultsHtml(v.value, out.chart, out.mooka);
         ui.renderResults(html);
+        // Record this successful Mooka analysis (per-device usage tracking).
+        ui.recordUsage({ mode: 'mooka' });
+        ui.renderUsageCounter();
       } catch (e) {
         showMsg(errEl, 'Could not cast the chart: ' + (e && e.message ? e.message : String(e)) +
           '. Please check your inputs and try again.', 'error');
@@ -4496,6 +4752,9 @@
       // When the Print Report tab is activated: clear any stale note if a
       // report already exists, otherwise pre-show the guidance note.
       if (printOn) {
+        // Refresh the live usage-statistics card from per-device storage.
+        const statsEl = $('usage-stats');
+        if (statsEl) statsEl.innerHTML = ui.buildUsageStatsHtml(ui.loadUsage());
         const noteEl = $('print-pane-note');
         const resultsEl = $('results');
         const hasReport = resultsEl && resultsEl.innerHTML.trim() !== '';
@@ -4529,6 +4788,9 @@
     }
 
     activate('manual');
+
+    // Initialise the header usage counter from per-device storage.
+    ui.renderUsageCounter();
   };
 
   if (typeof document !== "undefined" && document.addEventListener) {
