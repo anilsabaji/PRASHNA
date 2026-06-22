@@ -90,3 +90,37 @@ describe('Standard query: "Money stolen. Will I get back?"', () => {
     expect(answer.handler).toBe('missingItem');
   });
 });
+
+describe('Standard query: "Am I being scammed?"', () => {
+  const TARGET_TEXT = 'Am I being scammed?';
+
+  it('(a) exists in the standard QUESTION_CATALOG with house 6 and handler "enemies"', () => {
+    const found = KPApp.catalog.QUESTION_CATALOG.filter(q => q.text === TARGET_TEXT);
+    expect(found.length).toBe(1);
+    expect(found[0].house).toBe(6);
+    expect(found[0].handler).toBe('enemies');
+    expect(found[0].governingHouses).toEqual([6, 7, 8, 12]);
+  });
+
+  it('(b) resolveHandler returns "enemies"', () => {
+    const question = KPApp.catalog.QUESTION_CATALOG.find(q => q.text === TARGET_TEXT);
+    expect(question).toBeDefined();
+    expect(KPApp.catalog.resolveHandler(question)).toBe('enemies');
+  });
+
+  it('(c) answerQuestion runs without throwing and returns kp, hora, governingHouses and a who section', () => {
+    const question = KPApp.catalog.QUESTION_CATALOG.find(q => q.text === TARGET_TEXT);
+    const chart = buildChart('2024-06-15', '10:30', 19.076, 72.877, 5.5, 100);
+    let answer;
+    expect(() => { answer = KPApp.interpret.answerQuestion(question, chart); }).not.toThrow();
+    expect(answer).toBeDefined();
+    expect(typeof answer).toBe('object');
+    expect(typeof answer.kp).toBe('string');
+    expect(answer.kp.length).toBeGreaterThan(0);
+    expect(typeof answer.hora).toBe('string');
+    expect(answer.hora.length).toBeGreaterThan(0);
+    expect(answer.governingHouses).toEqual([6, 7, 8, 12]);
+    expect(answer.who).toBeDefined();
+    expect(answer.who).not.toBeNull();
+  });
+});
