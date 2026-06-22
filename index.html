@@ -2744,6 +2744,97 @@
     { id: 'h12-liberation', house: 12, text: 'Will I attain spiritual liberation and inner peace?', governingHouses: [5, 9, 12], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
     { id: 'h12-secretenemies', house: 12, text: 'Will I be protected from my secret enemies?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
 
+    // =====================================================================
+    // Additional frequently-asked Prashna questions (curated). Grouped by
+    // subject; each entry maps to an EXISTING handler in CATEGORY_HOUSES and
+    // groups under its `house` field via groupByHouse (array position is
+    // irrelevant to grouping).
+    // =====================================================================
+
+    // ---- Health (handler: health) ----
+    { id: 'h6-surgery',        house: 6,  text: 'Will my surgery be successful?', governingHouses: [1, 6, 8, 11], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h1-patient-recover',house: 1,  text: 'Will the patient recover soon?', governingHouses: [1, 6, 8, 12], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h6-illness-serious',house: 6,  text: 'Is my illness serious?', governingHouses: [1, 6, 8, 12], handler: 'health', interrogatives: ['WHETHER', 'HOW', 'WHY'] },
+    { id: 'h1-mental-stress',  house: 1,  text: 'Will my mental stress and anxiety ease?', governingHouses: [1, 5, 11, 12], handler: 'health', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Wealth / Finance (handler: finance / gains / wealthRecovery) ----
+    { id: 'h2-financial-secure', house: 2, text: 'Will I become financially secure?', governingHouses: [2, 6, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h2-money-troubles-end', house: 2, text: 'Will my financial troubles end?', governingHouses: [2, 6, 11, 12], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h6-loan-funding',   house: 6,  text: 'Will I get the loan or funding I applied for?', governingHouses: [2, 6, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h6-debt-free',      house: 6,  text: 'Will I become completely debt-free?', governingHouses: [2, 6, 11], handler: 'finance', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h2-money-owed',     house: 2,  text: 'Will I get back the money someone owes me?', governingHouses: [2, 6, 11], handler: 'wealthRecovery', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+
+    // ---- Career / Job (handler: career) ----
+    { id: 'h10-newjob',        house: 10, text: 'Will I get a new job?', governingHouses: [2, 6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-change-job',    house: 10, text: 'Should I change my job?', governingHouses: [6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-promotion-year',house: 10, text: 'Will I get a promotion this year?', governingHouses: [6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-salary-raise',  house: 10, text: 'Will I get a salary raise?', governingHouses: [2, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-govt-job',      house: 10, text: 'Will I get a government job?', governingHouses: [6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-transfer',      house: 10, text: 'Will I be transferred to a place I want?', governingHouses: [3, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h10-job-secure',    house: 10, text: 'Is my job secure, and will I avoid being laid off?', governingHouses: [6, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Business (handler: career) ----
+    { id: 'h10-startbiz',      house: 10, text: 'Should I start this new business?', governingHouses: [7, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h10-venture-succeed', house: 10, text: 'Will my new venture succeed?', governingHouses: [7, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h7-biz-partnership',house: 7,  text: 'Will my new business partnership work out well?', governingHouses: [7, 10, 11], handler: 'career', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+
+    // ---- Marriage / Relationship (handler: marriage) ----
+    { id: 'h7-love-marriage',  house: 7,  text: 'Will I marry the person I love?', governingHouses: [5, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h7-happy-marriage', house: 7,  text: 'Will my marriage be happy?', governingHouses: [2, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h7-marriage-delay', house: 7,  text: 'Is there delay in my marriage, and will it clear?', governingHouses: [2, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h7-rel-to-marriage',house: 5,  text: 'Will my relationship lead to marriage?', governingHouses: [5, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h7-partner-faithful', house: 7, text: 'Is my partner faithful to me?', governingHouses: [5, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h7-marital-discord',house: 7,  text: 'Will my marital discord be resolved?', governingHouses: [6, 7, 11], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h7-divorce',        house: 7,  text: 'Will my divorce or separation happen?', governingHouses: [6, 7, 12], handler: 'marriage', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Children (handler: children) ----
+    { id: 'h5-child-soon',     house: 5,  text: 'Will we have a child soon?', governingHouses: [2, 5, 11], handler: 'children', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h5-son',            house: 5,  text: 'Will I have a son?', governingHouses: [2, 5, 11], handler: 'children', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h5-child-problem',  house: 5,  text: "Will my child's problem be resolved?", governingHouses: [5, 6, 11], handler: 'children', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+
+    // ---- Education (handler: education) ----
+    { id: 'h5-admission',      house: 5,  text: 'Will I get admission to the college I want?', governingHouses: [4, 5, 9], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h5-competitive-exam', house: 5, text: 'Will I clear my competitive exam?', governingHouses: [4, 5, 9], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h5-scholarship',    house: 5,  text: 'Will I get a scholarship?', governingHouses: [4, 5, 11], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h9-study-abroad',   house: 9,  text: 'Will I complete my studies abroad?', governingHouses: [4, 9, 12], handler: 'education', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+
+    // ---- Property / Vehicle (handler: property) ----
+    { id: 'h4-buy-house-year', house: 4,  text: 'Will I buy my own house this year?', governingHouses: [4, 11, 12], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h4-sell-property',  house: 4,  text: 'Will I sell my property soon?', governingHouses: [4, 11, 12], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h4-property-deal',  house: 4,  text: 'Will the property deal go through?', governingHouses: [4, 11, 12], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h4-new-vehicle',    house: 4,  text: 'Will I buy a new vehicle soon?', governingHouses: [4, 11], handler: 'property', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Travel / Foreign (handler: travel) ----
+    { id: 'h9-visa',           house: 9,  text: 'Will I get my visa approved?', governingHouses: [3, 9, 12], handler: 'travel', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h9-abroad-work-study', house: 9, text: 'Will I go abroad for work or study?', governingHouses: [3, 9, 12], handler: 'travel', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h9-journey-safe',   house: 9,  text: 'Will my planned journey be safe and successful?', governingHouses: [3, 9, 12], handler: 'travel', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+    { id: 'h3-relocate',       house: 3,  text: 'Will I relocate to another city?', governingHouses: [3, 4, 12], handler: 'travel', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+
+    // ---- Litigation / Legal (handler: litigation) ----
+    { id: 'h6-court-case',     house: 6,  text: 'Will I win my court case?', governingHouses: [6, 7, 8], handler: 'litigation', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h6-bail',           house: 6,  text: 'Will I get bail?', governingHouses: [6, 8, 12], handler: 'litigation', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h6-dispute-favour', house: 6,  text: 'Will the legal dispute be settled in my favour?', governingHouses: [6, 7, 8], handler: 'litigation', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Enemies / Conflict (handler: enemies) ----
+    { id: 'h6-overcome-rivals',house: 6,  text: 'Will I overcome my rivals and opponents?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h6-danger-enemies', house: 6,  text: 'Am I in danger from my enemies?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'HOW', 'WHY'] },
+    { id: 'h6-conflict-end',   house: 6,  text: 'Will my ongoing conflict end peacefully?', governingHouses: [6, 8, 12], handler: 'enemies', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Fortune / Spiritual (handler: fortune) ----
+    { id: 'h9-luck-improve',   house: 9,  text: 'Will my luck improve soon?', governingHouses: [5, 9, 11], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h9-pilgrimage',     house: 9,  text: 'Will my pilgrimage or spiritual plan succeed?', governingHouses: [5, 9, 11], handler: 'fortune', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'HOW', 'WHY'] },
+
+    // ---- Gains / Wishes (handler: gains) ----
+    { id: 'h11-cherished-wish',house: 11, text: 'Will my long-cherished wish be fulfilled?', governingHouses: [2, 6, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+    { id: 'h11-investment-gain', house: 11, text: 'Will I gain from this investment or opportunity?', governingHouses: [2, 6, 11], handler: 'gains', interrogatives: ['WHETHER', 'WHEN', 'HOW', 'WHY'] },
+
+    // ---- Additional missing / lost / theft / person (handler: missingItem) ----
+    { id: 'miss-phone',        house: 'missing', text: 'Will my lost mobile phone be found?', governingHouses: [2, 4, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'WHY'] },
+    { id: 'miss-vehicle',      house: 'missing', text: 'Will my stolen vehicle be recovered?', governingHouses: [2, 4, 6, 7, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'WHY'] },
+    { id: 'miss-pet',          house: 'missing', text: 'Where is my lost pet, and will it return?', governingHouses: [2, 4, 6, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'WHY'] },
+    { id: 'miss-person-safe',  house: 'missing', text: 'Will the missing person be found and return safely?', governingHouses: [4, 7, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'WHY'] },
+    { id: 'miss-wallet',       house: 'missing', text: 'Will my lost wallet or purse be recovered?', governingHouses: [2, 4, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'WHY'] },
+
     // ---- Missing / lost-article set ----
     { id: 'miss-article',   house: 'missing', text: 'Where is my lost article and will I recover it?', governingHouses: [2, 4, 6, 7, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'WHY'] },
     { id: 'miss-jewellery', house: 'missing', text: 'Will my lost jewellery or valuables be found?', governingHouses: [2, 4, 11], handler: 'missingItem', interrogatives: ['WHETHER', 'WHEN', 'WHERE', 'WHY'] },

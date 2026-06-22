@@ -692,3 +692,79 @@ describe('Smoke / Integration', () => {
     expect(xhrCalls).toBe(0);
   });
 });
+
+
+
+// ========== CATALOG-WIDE GUARD ==========
+describe('Catalog-wide guards', () => {
+  const VALID_INTERROGATIVES = ['WHETHER', 'WHEN', 'WHO', 'WHERE', 'HOW', 'WHY'];
+
+  it('every question id in QUESTION_CATALOG is unique', () => {
+    const ids = KPApp.catalog.QUESTION_CATALOG.map(q => q.id);
+    const seen = new Set();
+    const dups = [];
+    ids.forEach(id => {
+      if (seen.has(id)) dups.push(id);
+      seen.add(id);
+    });
+    expect(dups).toEqual([]);
+    expect(seen.size).toBe(ids.length);
+  });
+
+  it('every question text is unique', () => {
+    const texts = KPApp.catalog.QUESTION_CATALOG.map(q => q.text);
+    const seen = new Set();
+    const dups = [];
+    texts.forEach(t => {
+      if (seen.has(t)) dups.push(t);
+      seen.add(t);
+    });
+    expect(dups).toEqual([]);
+    expect(seen.size).toBe(texts.length);
+  });
+
+  it('every handler exists in interpret.CATEGORY_HOUSES (resolveHandler does not throw)', () => {
+    KPApp.catalog.QUESTION_CATALOG.forEach(q => {
+      expect(() => KPApp.catalog.resolveHandler(q)).not.toThrow();
+      const handler = KPApp.catalog.resolveHandler(q);
+      expect(KPApp.interpret.CATEGORY_HOUSES[handler]).toBeDefined();
+    });
+  });
+
+  it('every governingHouses entry is an integer 1..12 and house is 1..12 or "missing"', () => {
+    KPApp.catalog.QUESTION_CATALOG.forEach(q => {
+      const validHouse = q.house === 'missing' || (Number.isInteger(q.house) && q.house >= 1 && q.house <= 12);
+      expect(validHouse).toBe(true);
+      expect(Array.isArray(q.governingHouses)).toBe(true);
+      expect(q.governingHouses.length).toBeGreaterThan(0);
+      q.governingHouses.forEach(h => {
+        expect(Number.isInteger(h)).toBe(true);
+        expect(h).toBeGreaterThanOrEqual(1);
+        expect(h).toBeLessThanOrEqual(12);
+      });
+      // interrogatives are a subset of the valid set and always include WHETHER & WHY
+      (q.interrogatives || []).forEach(i => expect(VALID_INTERROGATIVES).toContain(i));
+      expect(q.interrogatives).toContain('WHETHER');
+      expect(q.interrogatives).toContain('WHY');
+    });
+  });
+
+  it('answerQuestion runs without throwing for EVERY catalog question and returns valid kp/hora/attribution', () => {
+    const chart = buildChart('2024-06-15', '10:30', 19.076, 72.877, 5.5, 100);
+    KPApp.catalog.QUESTION_CATALOG.forEach(q => {
+      let answer;
+      expect(() => { answer = KPApp.interpret.answerQuestion(q, chart); }).not.toThrow();
+      expect(answer).toBeDefined();
+      expect(typeof answer.kp).toBe('string');
+      expect(answer.kp.length).toBeGreaterThan(0);
+      expect(typeof answer.hora).toBe('string');
+      expect(answer.hora.length).toBeGreaterThan(0);
+      expect(answer.attribution).toBe(KPApp.ATTRIBUTION);
+      expect(answer.attribution).toBe('Developed by Dr. Anil Sabaji, Email: anilsabaji@gmail.com');
+    });
+  });
+
+  it('catalog count increased substantially (>= 100 questions)', () => {
+    expect(KPApp.catalog.QUESTION_CATALOG.length).toBeGreaterThanOrEqual(100);
+  });
+});
