@@ -482,6 +482,7 @@
       <button type="button" role="tab" id="tab-manual" class="active" aria-selected="true">Manual Prashna</button>
       <button type="button" role="tab" id="tab-instant" aria-selected="false">Instant Prashna</button>
       <button type="button" role="tab" id="tab-mooka" aria-selected="false">Mooka Prashna</button>
+      <button type="button" role="tab" id="tab-print" aria-selected="false">Print Report</button>
     </nav>
 
     <section id="form-area"></section>
@@ -3231,6 +3232,37 @@
     return '<div class="results-actions no-print"><button type="button" class="btn-primary" id="print-report">\u{1F5A8} Print / Save as PDF</button></div>';
   };
 
+  // Shared print routine used by BOTH the in-results print button and the
+  // dedicated Print Report tab. Overrides document.title for the duration of
+  // the native print call (browsers use it as the default PDF filename) and
+  // restores it afterward (via the afterprint listener and a synchronous
+  // finally for environments that fire neither).
+  ui.printReport = function printReport() {
+    if (typeof window === 'undefined' || typeof window.print !== 'function') return;
+    var prevTitle = (typeof document !== 'undefined') ? document.title : null;
+    var restore = function () {
+      if (prevTitle != null && typeof document !== 'undefined') document.title = prevTitle;
+      if (typeof window.removeEventListener === 'function') window.removeEventListener('afterprint', restore);
+    };
+    if (typeof document !== 'undefined') document.title = 'KP-Prashna-Report';
+    if (typeof window.addEventListener === 'function') window.addEventListener('afterprint', restore);
+    try { window.print(); } finally { restore(); }
+  };
+
+  // Build the Print Report pane (DOM-free): returns an HTML string for a card
+  // that guides the user to generate a report first, then print / save it as
+  // a PDF via the browser's native dialog.
+  function buildPrintPaneHtml() {
+    return card('Print Report',
+      '<p class="hint">Generate a report in the <strong>Manual</strong>, ' +
+      '<strong>Instant</strong> or <strong>Mooka Prashna</strong> tab first, then ' +
+      'return here to print it. In the print dialog, choose <strong>"Save as PDF"</strong> ' +
+      'as the destination to save the report as a PDF file. Enable ' +
+      '<strong>"Background graphics"</strong> in the dialog options to keep the colours.</p>' +
+      '<button type="button" class="btn-primary" id="print-pane-btn">\u{1F5A8} Print / Save as PDF</button>' +
+      '<div id="print-pane-note" class="form-msg info"></div>');
+  }
+
   // Build the full results HTML (DOM-free). input is the validated value.
   ui.buildResultsHtml = function buildResultsHtml(input, chart, result) {
     let html = '';
@@ -3906,17 +3938,7 @@
     const printBtn = $('print-report');
     if (printBtn) {
       printBtn.addEventListener('click', function () {
-        if (typeof window === 'undefined' || typeof window.print !== 'function') return;
-        // Browsers use document.title as the default PDF filename, so override
-        // it just for the duration of the print call, then restore it.
-        var prevTitle = (typeof document !== 'undefined') ? document.title : null;
-        var restore = function () {
-          if (prevTitle != null && typeof document !== 'undefined') document.title = prevTitle;
-          if (typeof window.removeEventListener === 'function') window.removeEventListener('afterprint', restore);
-        };
-        if (typeof document !== 'undefined') document.title = 'KP-Prashna-Report';
-        if (typeof window.addEventListener === 'function') window.addEventListener('afterprint', restore);
-        try { window.print(); } finally { restore(); }
+        ui.printReport();
       });
     }
     if (results.scrollIntoView) {
@@ -4054,7 +4076,8 @@
       area.innerHTML =
         '<div id="manual-pane">' + buildFormHtml('manual', 'manual') + '</div>' +
         '<div id="instant-pane" class="hidden">' + buildFormHtml('instant', 'instant') + '</div>' +
-        '<div id="mooka-pane" class="hidden">' + buildMookaFormHtml('mooka') + '</div>';
+        '<div id="mooka-pane" class="hidden">' + buildMookaFormHtml('mooka') + '</div>' +
+        '<div id="print-pane" class="hidden">' + buildPrintPaneHtml() + '</div>';
     }
 
     // City autocomplete + analyze handlers for both forms.
@@ -4081,14 +4104,17 @@
     const tabManual = $('tab-manual');
     const tabInstant = $('tab-instant');
     const tabMooka = $('tab-mooka');
+    const tabPrint = $('tab-print');
     const paneManual = $('manual-pane');
     const paneInstant = $('instant-pane');
     const paneMooka = $('mooka-pane');
+    const panePrint = $('print-pane');
 
     function activate(which) {
       const manualOn = (which === 'manual');
       const instantOn = (which === 'instant');
       const mookaOn = (which === 'mooka');
+      const printOn = (which === 'print');
       if (tabManual) {
         tabManual.classList.toggle('active', manualOn);
         tabManual.setAttribute('aria-selected', manualOn ? 'true' : 'false');
@@ -4101,16 +4127,50 @@
         tabMooka.classList.toggle('active', mookaOn);
         tabMooka.setAttribute('aria-selected', mookaOn ? 'true' : 'false');
       }
+      if (tabPrint) {
+        tabPrint.classList.toggle('active', printOn);
+        tabPrint.setAttribute('aria-selected', printOn ? 'true' : 'false');
+      }
       if (paneManual) paneManual.classList.toggle('hidden', !manualOn);
       if (paneInstant) paneInstant.classList.toggle('hidden', !instantOn);
       if (paneMooka) paneMooka.classList.toggle('hidden', !mookaOn);
+      if (panePrint) panePrint.classList.toggle('hidden', !printOn);
       if (instantOn && !instantPrimed) primeInstant();
       if (mookaOn && !mookaPrimed) primeMooka();
+      // When the Print Report tab is activated: clear any stale note if a
+      // report already exists, otherwise pre-show the guidance note.
+      if (printOn) {
+        const noteEl = $('print-pane-note');
+        const resultsEl = $('results');
+        const hasReport = resultsEl && resultsEl.innerHTML.trim() !== '';
+        if (hasReport) {
+          hideMsg(noteEl);
+        } else {
+          showMsg(noteEl, 'Please generate a report first using the Manual, Instant or Mooka Prashna tab, then return here to print.', 'info');
+        }
+      }
     }
 
     if (tabManual) tabManual.addEventListener('click', function () { activate('manual'); });
     if (tabInstant) tabInstant.addEventListener('click', function () { activate('instant'); });
     if (tabMooka) tabMooka.addEventListener('click', function () { activate('mooka'); });
+    if (tabPrint) tabPrint.addEventListener('click', function () { activate('print'); });
+
+    // Print Report pane button: print only when a report exists, otherwise
+    // guide the user to generate one first.
+    const printPaneBtn = $('print-pane-btn');
+    if (printPaneBtn) {
+      printPaneBtn.addEventListener('click', function () {
+        const resultsEl = $('results');
+        const noteEl = $('print-pane-note');
+        if (resultsEl && resultsEl.innerHTML.trim() !== '') {
+          hideMsg(noteEl);
+          ui.printReport();
+        } else {
+          showMsg(noteEl, 'Please generate a report first using the Manual, Instant or Mooka Prashna tab, then return here to print.', 'info');
+        }
+      });
+    }
 
     activate('manual');
   };

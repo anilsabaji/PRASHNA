@@ -157,3 +157,121 @@ describe('printBarHtml is prepended to every report builder', () => {
     expect(KPApp.ATTRIBUTION).toBe('Developed by Dr. Anil Sabaji, Email: anilsabaji@gmail.com');
   });
 });
+
+
+// ---------------------------------------------------------------------------
+// Dedicated "Print Report" tab: tab ordering, pane switching, and the
+// print-pane button behavior (guidance note when no report, native print
+// when a report exists).
+// ---------------------------------------------------------------------------
+describe('Print Report tab', () => {
+  let dom, doc, win;
+
+  beforeAll(async () => {
+    const htmlPath = path.resolve(__dirname, '..', 'kp-prashna.html');
+    const html = fs.readFileSync(htmlPath, 'utf-8');
+    dom = new JSDOM(html, {
+      url: 'http://localhost',
+      runScripts: 'dangerously',
+      pretendToBeVisual: true
+    });
+    win = dom.window;
+    doc = win.document;
+    win.Element.prototype.scrollIntoView = function () {};
+    await new Promise(resolve => {
+      if (doc.readyState === 'complete' || doc.readyState === 'interactive') resolve();
+      else win.addEventListener('DOMContentLoaded', resolve);
+      setTimeout(resolve, 200);
+    });
+  });
+
+  function runMookaAnalysis() {
+    doc.getElementById('tab-mooka').dispatchEvent(new win.Event('click'));
+    doc.getElementById('mooka-date').value = '2024-03-21';
+    doc.getElementById('mooka-time').value = '14:30';
+    doc.getElementById('mooka-lat').value = '19.0760';
+    doc.getElementById('mooka-lon').value = '72.8777';
+    doc.getElementById('mooka-tz').value = '5.5';
+    doc.getElementById('mooka-city').value = 'Mumbai';
+    doc.getElementById('mooka-analyze').dispatchEvent(new win.Event('click'));
+  }
+
+  it('adds a #tab-print tab that is the LAST tab in the bar, after #tab-mooka', () => {
+    const tabBar = doc.querySelector('.tab-bar');
+    const tabPrint = doc.getElementById('tab-print');
+    expect(tabPrint).toBeTruthy();
+    expect(tabPrint.textContent.trim()).toBe('Print Report');
+
+    const buttons = Array.from(tabBar.querySelectorAll('button'));
+    // Print Report must be the final tab button.
+    expect(buttons[buttons.length - 1].id).toBe('tab-print');
+    // And it must appear after the Mooka Prashna tab.
+    const mookaIdx = buttons.findIndex(b => b.id === 'tab-mooka');
+    const printIdx = buttons.findIndex(b => b.id === 'tab-print');
+    expect(printIdx).toBeGreaterThan(mookaIdx);
+  });
+
+  it('clicking #tab-print shows #print-pane and hides the other panes', () => {
+    doc.getElementById('tab-print').dispatchEvent(new win.Event('click'));
+
+    expect(doc.getElementById('print-pane').classList.contains('hidden')).toBe(false);
+    expect(doc.getElementById('manual-pane').classList.contains('hidden')).toBe(true);
+    expect(doc.getElementById('instant-pane').classList.contains('hidden')).toBe(true);
+    expect(doc.getElementById('mooka-pane').classList.contains('hidden')).toBe(true);
+
+    // The print tab is marked active / selected.
+    const tabPrint = doc.getElementById('tab-print');
+    expect(tabPrint.classList.contains('active')).toBe(true);
+    expect(tabPrint.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('with NO report yet, clicking #print-pane-btn does not print and shows the guidance note', () => {
+    // Ensure results are empty.
+    doc.getElementById('results').innerHTML = '';
+    doc.getElementById('tab-print').dispatchEvent(new win.Event('click'));
+
+    const btn = doc.getElementById('print-pane-btn');
+    expect(btn).toBeTruthy();
+
+    const spy = vi.fn();
+    const original = win.print;
+    win.print = spy;
+    try {
+      btn.dispatchEvent(new win.Event('click'));
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      win.print = original;
+    }
+
+    const note = doc.getElementById('print-pane-note');
+    expect(note.classList.contains('show')).toBe(true);
+    expect(note.textContent).toContain('generate a report first');
+  });
+
+  it('after generating a report, clicking #print-pane-btn prints once and toggles the title', () => {
+    runMookaAnalysis();
+    // Confirm a report was produced.
+    expect(doc.getElementById('results').innerHTML.trim()).not.toBe('');
+
+    // Switch back to the Print Report tab.
+    doc.getElementById('tab-print').dispatchEvent(new win.Event('click'));
+
+    const btn = doc.getElementById('print-pane-btn');
+    expect(btn).toBeTruthy();
+
+    const originalTitle = doc.title;
+    let titleDuringPrint = null;
+    const original = win.print;
+    win.print = vi.fn(function () {
+      titleDuringPrint = doc.title;
+    });
+    try {
+      btn.dispatchEvent(new win.Event('click'));
+      expect(win.print).toHaveBeenCalledTimes(1);
+      expect(titleDuringPrint).toBe('KP-Prashna-Report');
+      expect(doc.title).toBe(originalTitle);
+    } finally {
+      win.print = original;
+    }
+  });
+});
