@@ -3501,6 +3501,7 @@
             '</div>' +
           '</fieldset>' +
         '</div>' +
+        '<div id="' + prefix + '-geo" class="form-msg info"></div>' +
         '<button type="button" class="btn-primary" id="' + prefix + '-analyze">Analyze Silent Query</button>' +
         '<div id="' + prefix + '-error" class="form-msg error"></div>' +
       '</div>';
@@ -3952,30 +3953,38 @@
     if (tEl) tEl.value = pad(now.getHours()) + ':' + pad(now.getMinutes());
   }
 
-  // Request geolocation for the Instant tab; fall back to manual entry.
-  function requestInstantLocation() {
-    const geoEl = $('instant-geo');
+  // Request geolocation for a form prefix and fill {prefix}-lat/-lon/-tz,
+  // writing status into {prefix}-geo. Used by both the Instant and Mooka
+  // tabs; every field stays editable so the user can confirm or change it.
+  function requestLocationFor(prefix) {
+    const geoEl = $(prefix + '-geo');
     const tz = -(new Date().getTimezoneOffset()) / 60;
-    if ($('instant-tz') && !$('instant-tz').value) $('instant-tz').value = tz;
+    if ($(prefix + '-tz') && !$(prefix + '-tz').value) $(prefix + '-tz').value = tz;
 
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      showMsg(geoEl, 'Geolocation is not available. Please enter your latitude, longitude and timezone manually below.', 'info');
+      showMsg(geoEl, 'Geolocation is not available. Please enter the latitude, longitude and timezone manually below.', 'info');
       return;
     }
-    showMsg(geoEl, 'Detecting your current location\u2026', 'info');
+    showMsg(geoEl, 'Detecting the current location\u2026', 'info');
     navigator.geolocation.getCurrentPosition(
       function (pos) {
-        if ($('instant-lat')) $('instant-lat').value = pos.coords.latitude.toFixed(4);
-        if ($('instant-lon')) $('instant-lon').value = pos.coords.longitude.toFixed(4);
-        if ($('instant-tz') && !$('instant-tz').value) $('instant-tz').value = tz;
-        showMsg(geoEl, 'Location detected. Verify the values below, then analyze.', 'info');
+        if ($(prefix + '-lat')) $(prefix + '-lat').value = pos.coords.latitude.toFixed(4);
+        if ($(prefix + '-lon')) $(prefix + '-lon').value = pos.coords.longitude.toFixed(4);
+        if ($(prefix + '-tz') && !$(prefix + '-tz').value) $(prefix + '-tz').value = tz;
+        showMsg(geoEl, 'Location detected. Verify the date, time and place below, then analyze.', 'info');
       },
       function () {
-        showMsg(geoEl, 'Location access was denied or unavailable. Please enter your latitude, ' +
+        showMsg(geoEl, 'Location access was denied or unavailable. Please enter the latitude, ' +
           'longitude and timezone manually below.', 'info');
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
     );
+  }
+
+  // Request geolocation for the Instant tab; fall back to manual entry.
+  // Thin wrapper preserved for backward compatibility.
+  function requestInstantLocation() {
+    requestLocationFor('instant');
   }
 
   let instantPrimed = false;
@@ -3983,6 +3992,16 @@
     prefillNow('instant');
     requestInstantLocation();
     instantPrimed = true;
+  }
+
+  // Auto-fill the Mooka tab on first open: current device date/time plus the
+  // current place via geolocation. Guarded so re-opening never overwrites
+  // the user's manual edits. All fields remain editable.
+  let mookaPrimed = false;
+  function primeMooka() {
+    prefillNow('mooka');
+    requestLocationFor('mooka');
+    mookaPrimed = true;
   }
 
   // Build both forms and the tab switching behaviour.
@@ -4043,6 +4062,7 @@
       if (paneInstant) paneInstant.classList.toggle('hidden', !instantOn);
       if (paneMooka) paneMooka.classList.toggle('hidden', !mookaOn);
       if (instantOn && !instantPrimed) primeInstant();
+      if (mookaOn && !mookaPrimed) primeMooka();
     }
 
     if (tabManual) tabManual.addEventListener('click', function () { activate('manual'); });

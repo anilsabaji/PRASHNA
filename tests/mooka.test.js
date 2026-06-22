@@ -410,3 +410,105 @@ describe('Mooka Prashna UI integration', () => {
     expect(text).toContain('Developed by Dr. Anil Sabaji');
   });
 });
+
+// ===========================================================================
+// Integration test (JSDOM): the Mooka tab auto-fetches the current time and
+// the current place (geolocation) on first activation, keeps fields editable,
+// and then renders ranked results when "Analyze Silent Query" is pressed.
+// ===========================================================================
+describe('Mooka Prashna auto-fetch (time + place) on first activation', () => {
+  let dom, doc, win;
+  const FIXED_LAT = 12.9716;
+  const FIXED_LON = 77.5946;
+
+  beforeAll(async () => {
+    const htmlPath = path.resolve(__dirname, '..', 'kp-prashna.html');
+    const html = fs.readFileSync(htmlPath, 'utf-8');
+    dom = new JSDOM(html, {
+      url: 'http://localhost',
+      runScripts: 'dangerously',
+      pretendToBeVisual: true
+    });
+    win = dom.window;
+    doc = win.document;
+    win.Element.prototype.scrollIntoView = function () {};
+
+    // Stub geolocation to return a fixed position synchronously (deterministic).
+    Object.defineProperty(win.navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: function (success) {
+          success({ coords: { latitude: FIXED_LAT, longitude: FIXED_LON } });
+        }
+      }
+    });
+
+    // Wait for DOMContentLoaded -> ui.init() to run.
+    await new Promise(resolve => {
+      if (doc.readyState === 'complete' || doc.readyState === 'interactive') resolve();
+      else win.addEventListener('DOMContentLoaded', resolve);
+      setTimeout(resolve, 200);
+    });
+  });
+
+  it('populates date/time and fills lat/lon from geolocation when the Mooka tab is first opened', () => {
+    // Before activation lat/lon must be empty (proves the values come from the auto-fetch).
+    expect(doc.getElementById('mooka-lat').value).toBe('');
+    expect(doc.getElementById('mooka-lon').value).toBe('');
+
+    doc.getElementById('tab-mooka').dispatchEvent(new win.Event('click'));
+
+    // Date & time auto-filled with the current device moment.
+    expect(doc.getElementById('mooka-date').value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(doc.getElementById('mooka-time').value).toMatch(/^\d{2}:\d{2}$/);
+
+    // Latitude / longitude filled from the stubbed geolocation.
+    expect(parseFloat(doc.getElementById('mooka-lat').value)).toBeCloseTo(FIXED_LAT, 3);
+    expect(parseFloat(doc.getElementById('mooka-lon').value)).toBeCloseTo(FIXED_LON, 3);
+
+    // The geo status element exists and reports success.
+    const geo = doc.getElementById('mooka-geo');
+    expect(geo).toBeTruthy();
+    expect(geo.textContent.length).toBeGreaterThan(0);
+
+    // Fields remain fully editable.
+    expect(doc.getElementById('mooka-date').disabled).toBe(false);
+    expect(doc.getElementById('mooka-lat').readOnly).toBe(false);
+  });
+
+  it('does not overwrite the user\'s manual edits when the tab is re-opened', () => {
+    // User edits the auto-filled values.
+    doc.getElementById('mooka-lat').value = '51.5074';
+    doc.getElementById('mooka-lon').value = '-0.1278';
+    doc.getElementById('mooka-date').value = '2024-03-21';
+    doc.getElementById('mooka-time').value = '14:30';
+
+    // Switch away and back to Mooka.
+    doc.getElementById('tab-manual').dispatchEvent(new win.Event('click'));
+    doc.getElementById('tab-mooka').dispatchEvent(new win.Event('click'));
+
+    // Manual edits are preserved (auto-fetch only runs once).
+    expect(doc.getElementById('mooka-lat').value).toBe('51.5074');
+    expect(doc.getElementById('mooka-lon').value).toBe('-0.1278');
+    expect(doc.getElementById('mooka-date').value).toBe('2024-03-21');
+    expect(doc.getElementById('mooka-time').value).toBe('14:30');
+  });
+
+  it('renders ranked silent-query results after editing fields and pressing Analyze', () => {
+    doc.getElementById('mooka-date').value = '2024-03-21';
+    doc.getElementById('mooka-time').value = '14:30';
+    doc.getElementById('mooka-lat').value = '19.0760';
+    doc.getElementById('mooka-lon').value = '72.8777';
+    doc.getElementById('mooka-tz').value = '5.5';
+    doc.getElementById('mooka-city').value = 'Mumbai';
+
+    doc.getElementById('mooka-analyze').dispatchEvent(new win.Event('click'));
+
+    const text = doc.getElementById('results').textContent || '';
+    expect(text).toContain('The querent is most likely thinking about');
+    expect(text).toContain('KP Reasoning');
+    expect(text).toContain('Hora Shastra Reasoning');
+    expect(text).toContain('Developed by Dr. Anil Sabaji');
+  });
+});
+
